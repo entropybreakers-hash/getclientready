@@ -264,6 +264,50 @@
     </div>
   </section>
 
+  <!-- DIAGNOSTIC QUIZ -->
+  <section id="quiz" class="py-20 md:py-28 bg-black/40 border-y border-white/5">
+    <div class="max-w-3xl mx-auto px-5 md:px-8">
+      <div class="text-center mb-12">
+        <span class="eyebrow reveal">Diagnostic</span>
+        <h2 class="font-serif text-3xl md:text-5xl mt-4 font-medium leading-tight reveal">
+          Find your breakdown pattern in <em class="accent-text">90 seconds.</em>
+        </h2>
+        <p class="mt-5 text-base md:text-lg text-ink-muted leading-relaxed reveal d1">
+          Five honest questions. One personalised result. No email required.
+        </p>
+      </div>
+
+      <div id="quizCard" class="card-dark rounded-sm p-7 md:p-10 reveal d1">
+        <!-- Progress -->
+        <div id="quizProgressWrap" class="mb-8">
+          <div class="flex justify-between text-[0.65rem] md:text-xs tracking-widest uppercase text-ink-muted mb-3">
+            <span id="quizStepLabel">Question 1 of 5</span>
+            <span id="quizProgressPct">20%</span>
+          </div>
+          <div class="h-1 bg-white/10 rounded-full overflow-hidden">
+            <div id="quizProgressBar" class="h-full bg-accent transition-all duration-500" style="width: 20%"></div>
+          </div>
+        </div>
+
+        <!-- Step content -->
+        <div id="quizContent" aria-live="polite"></div>
+
+        <!-- Nav -->
+        <div id="quizNav" class="mt-8 flex items-center justify-between gap-4">
+          <button id="quizBack" type="button" class="text-xs tracking-widest uppercase text-ink-muted hover:text-accent disabled:opacity-30 disabled:pointer-events-none transition-colors">← Back</button>
+          <button id="quizNext" type="button" class="btn-accent disabled:opacity-40 disabled:pointer-events-none">Next →</button>
+        </div>
+
+        <!-- Result (hidden until last step) -->
+        <div id="quizResult" class="hidden"></div>
+      </div>
+
+      <p class="mt-6 text-center text-xs text-ink-muted">
+        Your answers stay on this page. Nothing is sent anywhere until you book a call.
+      </p>
+    </div>
+  </section>
+
   <!-- REALITY -->
   <section class="py-20 md:py-28">
     <div class="max-w-3xl mx-auto px-5 md:px-8 text-center">
@@ -873,6 +917,203 @@
       const h = document.documentElement.scrollHeight - window.innerHeight;
       bar.style.width = (top / h * 100) + '%';
     }, { passive: true });
+
+    /* ── DIAGNOSTIC QUIZ ───────────────────────────────────────── */
+    (function() {
+      const CAL_URL = 'https://calendar.app.google/EvfpzhSXvaz6Pi4G9';
+
+      const steps = [
+        {
+          id: 'where', type: 'single',
+          question: 'When the pressure is on, where do you freeze most?',
+          options: [
+            { value: 'negotiation', label: 'International client negotiations' },
+            { value: 'presentation', label: 'Boardroom or leadership presentations' },
+            { value: 'call', label: 'Phone or video calls with native speakers' },
+            { value: 'written', label: 'High-stakes written communication' },
+          ],
+        },
+        {
+          id: 'breakdown', type: 'single',
+          question: "What's the first thing that fails when stakes get high?",
+          options: [
+            { value: 'lag', label: "The right words don't come — I'm searching for vocabulary" },
+            { value: 'structure', label: 'My sentences start strong but get tangled mid-way' },
+            { value: 'shrink', label: 'I shrink — hedging, softening, apologising' },
+            { value: 'freeze', label: 'I freeze — pause too long, lose the flow' },
+          ],
+        },
+        {
+          id: 'tried', type: 'multi',
+          question: 'What have you already tried? (select all that apply)',
+          options: [
+            { value: 'ai', label: 'ChatGPT or other AI tools' },
+            { value: 'tutor', label: '1:1 language tutor' },
+            { value: 'course', label: 'Online English courses' },
+            { value: 'self', label: 'Self-study — books, podcasts, apps' },
+            { value: 'none', label: 'Nothing serious yet' },
+          ],
+        },
+        {
+          id: 'frequency', type: 'single',
+          question: 'How often does this cost you authority in real situations?',
+          options: [
+            { value: 'often', label: 'Almost every high-stakes conversation' },
+            { value: 'monthly', label: 'A few times a month' },
+            { value: 'yearly', label: 'A few times a year — but each one stings' },
+            { value: 'rare', label: 'Rarely — specific situations only' },
+          ],
+        },
+        {
+          id: 'goal', type: 'single',
+          question: 'What would change if you walked into any room with full authority in English?',
+          options: [
+            { value: 'close', label: "I'd close deals I currently lose" },
+            { value: 'lead', label: "I'd lead conversations instead of follow" },
+            { value: 'effort', label: "I'd stop preparing twice as hard to compensate" },
+            { value: 'identity', label: "I'd finally feel like myself in English" },
+          ],
+        },
+      ];
+
+      const results = {
+        lag: {
+          name: 'Translation Lag',
+          oneLiner: "You're translating from German before you speak — and the lag costs you authority before the sentence even ends.",
+          diagnosis: "This is the most common pattern among DACH executives, and the most invisible. It's not a vocabulary problem — you have the words. It's a wiring problem: your brain treats English as a foreign language to convert, not a native channel to express in. International clients don't read this as translation. They read it as uncertainty.",
+          weeks: 'Week 2 (Arm) and Week 3 (Articulate) rebuild this completely.',
+        },
+        structure: {
+          name: 'Structure Gap',
+          oneLiner: 'Your English has the words. Under pressure, your sentence structures collapse mid-thought.',
+          diagnosis: "You start a sentence strong, then somewhere in the middle the through-line gets lost. This happens because the high-performance frameworks fluent speakers use automatically aren't yet automatic for you. Grammar isn't the problem — load is. Your brain runs out of bandwidth holding the structure while also choosing the message.",
+          weeks: 'Week 2 (Arm) installs 12 of these frameworks. Week 4 (Pressure-Test) makes them automatic under stakes.',
+        },
+        shrink: {
+          name: 'Identity Shift',
+          oneLiner: "The English version of you doesn't carry the same weight as the German version.",
+          diagnosis: "You hedge — 'maybe we should think about', 'I find it interesting'. You soften. You apologise for taking up space. This is the most expensive pattern in DACH rooms, because international clients read hedging as uncertainty about your own position. They follow people who sound certain. The work isn't on your English — it's on who you are when you speak it.",
+          weeks: 'Week 5 (Command) is built directly for this — how to steer, redirect, disagree and close with the same authority you have in German.',
+        },
+        freeze: {
+          name: 'Freeze Pattern',
+          oneLiner: 'When the stakes get high enough, your mouth stops cooperating with your mind.',
+          diagnosis: "You know what you want to say. You just can't get there in real time. This is a pressure-response pattern, not a language pattern. The freeze isn't fluency — it's nervous system. The good news: this responds faster to deliberate pressure-training than any other pattern.",
+          weeks: 'Week 4 (Pressure-Test) is built specifically for this — live AI simulations that train your nervous system to perform when the room is watching.',
+        },
+      };
+
+      const answers = {};
+      let idx = 0;
+
+      const elContent = document.getElementById('quizContent');
+      const elBack = document.getElementById('quizBack');
+      const elNext = document.getElementById('quizNext');
+      const elStepLabel = document.getElementById('quizStepLabel');
+      const elProgressPct = document.getElementById('quizProgressPct');
+      const elProgressBar = document.getElementById('quizProgressBar');
+      const elResult = document.getElementById('quizResult');
+      const elProgressWrap = document.getElementById('quizProgressWrap');
+      const elNav = document.getElementById('quizNav');
+
+      function render() {
+        const step = steps[idx];
+        const pct = Math.round(((idx + 1) / steps.length) * 100);
+        elStepLabel.textContent = `Question ${idx + 1} of ${steps.length}`;
+        elProgressPct.textContent = pct + '%';
+        elProgressBar.style.width = pct + '%';
+
+        const current = answers[step.id];
+        const optionsHtml = step.options.map(opt => {
+          const selected = step.type === 'multi'
+            ? (current || []).includes(opt.value)
+            : current === opt.value;
+          return `
+            <button type="button" data-value="${opt.value}"
+              class="quiz-opt w-full text-left p-4 md:p-5 rounded-sm border transition-colors ${selected ? 'border-accent bg-accent/10 text-ink-light' : 'border-white/10 hover:border-accent/40 text-ink-light/85'}">
+              <span class="flex items-start gap-3">
+                <span class="mt-1 inline-block w-4 h-4 ${step.type === 'multi' ? 'rounded-sm' : 'rounded-full'} border ${selected ? 'border-accent bg-accent' : 'border-white/30'} flex-shrink-0"></span>
+                <span class="text-sm md:text-base leading-snug">${opt.label}</span>
+              </span>
+            </button>
+          `;
+        }).join('');
+
+        elContent.innerHTML = `
+          <h3 class="font-serif text-2xl md:text-3xl font-medium mb-2 leading-snug">${step.question}</h3>
+          ${step.type === 'multi' ? '<p class="text-xs uppercase tracking-widest text-ink-muted mb-5">Multiple answers ok</p>' : '<div class="mb-5"></div>'}
+          <div class="space-y-3">${optionsHtml}</div>
+        `;
+
+        elBack.disabled = idx === 0;
+        const canAdvance = step.type === 'multi'
+          ? (answers[step.id] && answers[step.id].length > 0)
+          : !!answers[step.id];
+        elNext.disabled = !canAdvance;
+        elNext.textContent = idx === steps.length - 1 ? 'Show My Result →' : 'Next →';
+
+        elContent.querySelectorAll('.quiz-opt').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const v = btn.dataset.value;
+            if (step.type === 'multi') {
+              const arr = answers[step.id] || [];
+              const i = arr.indexOf(v);
+              if (i >= 0) arr.splice(i, 1); else arr.push(v);
+              answers[step.id] = arr;
+            } else {
+              answers[step.id] = v;
+            }
+            render();
+          });
+        });
+      }
+
+      function showResult() {
+        const key = answers.breakdown || 'lag';
+        const r = results[key];
+        elProgressWrap.classList.add('hidden');
+        elNav.classList.add('hidden');
+        elContent.classList.add('hidden');
+        elResult.classList.remove('hidden');
+        elResult.innerHTML = `
+          <div class="text-center">
+            <div class="eyebrow mb-3">Your Pattern</div>
+            <h3 class="font-serif text-3xl md:text-5xl font-medium leading-tight">
+              <em class="accent-text">${r.name}</em>
+            </h3>
+            <p class="mt-6 font-serif italic text-xl md:text-2xl text-ink-light/90 leading-snug max-w-xl mx-auto">${r.oneLiner}</p>
+          </div>
+          <div class="mt-10 pt-10 border-t border-white/10 text-left max-w-2xl mx-auto">
+            <p class="text-base md:text-lg text-ink-light/85 leading-[1.75]">${r.diagnosis}</p>
+            <p class="mt-5 text-sm md:text-base text-accent leading-relaxed"><strong class="font-medium">How the system fixes it:</strong> ${r.weeks}</p>
+          </div>
+          <div class="mt-10 text-center">
+            <a href="${CAL_URL}" target="_blank" rel="noopener" class="btn-accent">Book a 30-min Call</a>
+            <p class="mt-4 text-xs text-ink-muted">No prep needed. Tell Bettina you're a "${r.name}" and we'll start there.</p>
+          </div>
+          <div class="mt-8 text-center">
+            <button type="button" id="quizRestart" class="text-xs tracking-widest uppercase text-ink-muted hover:text-accent transition-colors">↻ Restart quiz</button>
+          </div>
+        `;
+        document.getElementById('quizRestart').addEventListener('click', () => {
+          for (const k in answers) delete answers[k];
+          idx = 0;
+          elProgressWrap.classList.remove('hidden');
+          elNav.classList.remove('hidden');
+          elContent.classList.remove('hidden');
+          elResult.classList.add('hidden');
+          render();
+        });
+      }
+
+      elNext.addEventListener('click', () => {
+        if (idx < steps.length - 1) { idx++; render(); }
+        else showResult();
+      });
+      elBack.addEventListener('click', () => { if (idx > 0) { idx--; render(); } });
+
+      render();
+    })();
   </script>
 </body>
 </html>
