@@ -19,10 +19,10 @@ Domain: `getclientready.entropybreakers.com`.
 ├── datenschutz.html   # GDPR / DSGVO privacy page
 ├── CNAME              # Custom domain pin for GitHub Pages
 ├── assets/
-│   ├── bettina-hero.jpg     # Hero portrait (white bg, 3/4 turn looking back at viewer)
-│   ├── bettina-about.jpg    # About Bettina section (black bg, hand near chin, thoughtful)
-│   ├── bettina-founder.jpg  # Small thumbnail next to Founder's Note signature
-│   ├── bettina-final.jpg    # Background of the Final CTA section (dark bg, power pose)
+│   ├── bettina-hero.jpg     # Hero portrait (white bg, arms crossed, profile gaze)
+│   ├── bettina-about.png    # About Bettina section (black bg, hand near chin)
+│   ├── bettina-founder.jpg  # Thumbnail next to Founder's Note signature (white bg, side profile)
+│   ├── bettina-final.png    # Final CTA background (black bg, hands on hips)
 │   └── favicon.svg
 └── README.md
 ```
