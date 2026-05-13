@@ -82,9 +82,10 @@ export default async function AdminPage() {
               const count = pendingByUser.get(s.user_id) ?? 0;
               const pct = Math.round(((s.current_week - 1) / 6) * 100);
               return (
-                <div
+                <Link
                   key={s.user_id}
-                  className="md:grid md:grid-cols-12 gap-4 px-6 py-5 border-b border-white/5 last:border-b-0 hover:bg-white/2 transition-colors"
+                  href={`/admin/students/${s.user_id}`}
+                  className="md:grid md:grid-cols-12 gap-4 px-6 py-5 border-b border-white/5 last:border-b-0 hover:bg-white/2 transition-colors block"
                 >
                   <div className="md:col-span-3 mb-3 md:mb-0">
                     <div className="font-medium text-ink-light">
@@ -116,7 +117,7 @@ export default async function AdminPage() {
                       <span className="text-xs text-ink-muted">All clear</span>
                     )}
                   </div>
-                </div>
+                </Link>
               );
             })
           )}
