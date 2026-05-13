@@ -168,7 +168,7 @@
         "jobTitle": "English Performance Coach",
         "worksFor": { "@type": "Organization", "name": "Entropy Breakers" },
         "address": { "@type": "PostalAddress", "addressRegion": "Tirol", "addressCountry": "AT" },
-        "email": "hallo@entropybreakers.com"
+        "email": "baranyibettina@entropybreakers.com"
       },
       {
         "@type": "Service",
@@ -766,27 +766,36 @@
     </div>
   </section>
 
-  <!-- FINAL CTA -->
-  <section class="relative py-24 md:py-32 overflow-hidden">
-    <div class="absolute inset-0 -z-0">
-      <img src="assets/bettina-final.jpg" alt="" class="w-full h-full object-cover opacity-25" loading="lazy" />
-      <div class="absolute inset-0" style="background: radial-gradient(ellipse at center, rgba(15,15,15,0.6) 0%, rgba(15,15,15,0.95) 75%);"></div>
+  <!-- FINAL CTA — magazine cover with Bettina power-stance photo -->
+  <section class="relative min-h-[85vh] md:min-h-[90vh] overflow-hidden">
+    <!-- Full-bleed photo (Bettina, hands-on-hips, dark bg) positioned to the left -->
+    <div class="absolute inset-0 z-0">
+      <img src="assets/bettina-final.jpg" alt="" class="w-full h-full object-cover object-[30%_center]" loading="lazy" />
+      <!-- Gradient — dark on right (text side), fading to reveal photo on left -->
+      <div class="absolute inset-0 bg-gradient-to-l from-bg-dark via-bg-dark/85 to-bg-dark/10 md:via-bg-dark/70 md:to-transparent"></div>
+      <!-- Soft top + bottom fades for layout edges -->
+      <div class="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-bg-dark/80 to-transparent"></div>
+      <div class="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-bg-dark/60 to-transparent"></div>
     </div>
-    <div class="relative max-w-3xl mx-auto px-5 md:px-8 text-center">
-      <span class="eyebrow reveal">The Decision</span>
-      <h2 class="font-serif text-4xl md:text-6xl mt-4 font-medium leading-[1.05] reveal d1">
-        Stop losing rooms<br>
-        you should <em class="accent-text">own.</em>
-      </h2>
-      <p class="mt-7 text-base md:text-lg text-ink-light/85 leading-relaxed reveal d2">
-        Every call where someone else takes the lead. Every room where your expertise didn't land because your English didn't carry it. That ends here.
-      </p>
-      <div class="h-px w-24 mx-auto bg-accent/40 my-10 reveal d2"></div>
-      <p class="font-serif italic text-2xl md:text-3xl accent-text leading-snug reveal d2">
-        6 weeks from now, you will walk into any room in English — and own it.
-      </p>
-      <div class="mt-10 reveal d3">
-        <a href="#pricing" class="btn-accent">Start Closing The Gap</a>
+
+    <!-- Text overlay on the right -->
+    <div class="relative z-10 max-w-6xl mx-auto px-5 md:px-8 min-h-[85vh] md:min-h-[90vh] flex flex-col justify-center md:items-end pt-20 pb-20">
+      <div class="max-w-xl reveal md:text-right">
+        <span class="eyebrow block mb-5">The Decision</span>
+        <h2 class="font-serif font-medium text-4xl md:text-6xl leading-[1.05]">
+          Stop losing rooms<br>
+          you should <em class="accent-text">own.</em>
+        </h2>
+        <p class="mt-7 text-base md:text-lg text-ink-light/90 leading-relaxed reveal d1">
+          Every call where someone else takes the lead. Every room where your expertise didn't land because your English didn't carry it. That ends here.
+        </p>
+        <div class="h-px w-24 md:ml-auto bg-accent/40 my-10 reveal d1"></div>
+        <p class="font-serif italic text-2xl md:text-3xl accent-text leading-snug reveal d2">
+          6 weeks from now, you will walk into any room in English — and own it.
+        </p>
+        <div class="mt-9 reveal d2">
+          <a href="https://calendar.app.google/EvfpzhSXvaz6Pi4G9" target="_blank" rel="noopener" class="btn-accent">Book Your Call</a>
+        </div>
       </div>
     </div>
   </section>
@@ -803,7 +812,7 @@
           <div><strong>Bettina Baranyi</strong></div>
           <div>Englisch Performance Coach</div>
           <div>Tirol, Austria</div>
-          <a href="mailto:hallo@entropybreakers.com" class="text-accent hover:underline mt-2 inline-block">hallo@entropybreakers.com</a>
+          <a href="mailto:baranyibettina@entropybreakers.com" class="text-accent hover:underline mt-2 inline-block">baranyibettina@entropybreakers.com</a>
         </div>
         <div class="text-sm text-ink-muted">
           <div class="flex gap-4 mb-4">
