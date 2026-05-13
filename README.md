@@ -45,8 +45,6 @@ This version is a surgical rebuild of the previous Framer-style page. All copy p
 
 ## Open placeholders Bettina must fill before going live
 
-- `impressum.html` + `datenschutz.html` — exact Straße und Hausnummer (rest filled: 6020 Innsbruck, WK Tirol, Magistrat der Stadt Innsbruck).
-- Footer Instagram URL (LinkedIn is set).
 - The four portrait JPGs in `assets/` (see "Photo placement plan" below).
 
 ## Photo placement plan
