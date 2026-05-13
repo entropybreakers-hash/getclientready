@@ -561,6 +561,52 @@ export async function getAdminSubmissionById(
   };
 }
 
+export async function getStudentById(
+  userId: string,
+): Promise<Profile | null> {
+  if (USE_MOCK) {
+    return mockStudents.find((s) => s.user_id === userId) ?? null;
+  }
+  const supabase = await getServerClient();
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (error) throw error;
+  return data ? (data as Profile) : null;
+}
+
+export async function getStudentPatternReports(
+  userId: string,
+): Promise<PatternReport[]> {
+  if (USE_MOCK) {
+    return userId === mockProfile.user_id ? [mockPatternReport] : [];
+  }
+  const supabase = await getServerClient();
+  const { data, error } = await supabase
+    .from("pattern_reports")
+    .select("*")
+    .eq("user_id", userId)
+    .order("generated_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as PatternReport[];
+}
+
+export async function getStudentPlaybook(
+  userId: string,
+): Promise<Playbook | null> {
+  if (USE_MOCK) return null;
+  const supabase = await getServerClient();
+  const { data, error } = await supabase
+    .from("playbooks")
+    .select("*")
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (error) throw error;
+  return data ? (data as Playbook) : null;
+}
+
 export async function getFeedbackForSubmission(
   submissionId: string,
 ): Promise<Feedback | null> {

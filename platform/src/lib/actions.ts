@@ -4,6 +4,23 @@ import { revalidatePath } from "next/cache";
 import { USE_MOCK } from "./env";
 import { getServerClient } from "./supabase/server";
 
+async function requireAdmin() {
+  const supabase = await getServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { supabase, ok: false as const, error: "Not signed in." };
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("is_admin")
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (!profile?.is_admin) {
+    return { supabase, ok: false as const, error: "Admin only." };
+  }
+  return { supabase, ok: true as const, error: undefined };
+}
+
 interface SubmitFeedbackInput {
   submissionId: string;
   content: string;
@@ -78,6 +95,130 @@ export async function submitFeedbackAction(
 
   revalidatePath(`/admin/submissions/${submissionId}`);
   revalidatePath("/admin/submissions");
+  revalidatePath("/dashboard");
+  return { ok: true };
+}
+
+// ─── Pattern report admin ───────────────────────────────────────────────────
+
+interface SavePatternReportInput {
+  userId: string;
+  type: "diagnostic_week1" | "summary_week6";
+  content: string;
+}
+
+export async function savePatternReportAction(
+  input: SavePatternReportInput,
+): Promise<ActionResult> {
+  if (!input.content.trim()) {
+    return { ok: false, error: "Pattern report content is required." };
+  }
+
+  if (USE_MOCK) {
+    await new Promise((r) => setTimeout(r, 400));
+    revalidatePath(`/admin/students/${input.userId}`);
+    revalidatePath("/dashboard");
+    revalidatePath("/profile");
+    return { ok: true };
+  }
+
+  const auth = await requireAdmin();
+  if (!auth.ok) return { ok: false, error: auth.error };
+  const { supabase } = auth;
+
+  // Upsert: one report per (user_id, type) due to the unique constraint.
+  const { error } = await supabase.from("pattern_reports").upsert(
+    {
+      user_id: input.userId,
+      type: input.type,
+      content: input.content,
+      generated_at: new Date().toISOString(),
+    },
+    { onConflict: "user_id,type" },
+  );
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath(`/admin/students/${input.userId}`);
+  revalidatePath("/dashboard");
+  revalidatePath("/profile");
+  return { ok: true };
+}
+
+// ─── Playbook admin ─────────────────────────────────────────────────────────
+
+interface SavePlaybookInput {
+  userId: string;
+  pdfUrl: string;
+}
+
+export async function savePlaybookAction(
+  input: SavePlaybookInput,
+): Promise<ActionResult> {
+  if (!input.pdfUrl.trim()) {
+    return { ok: false, error: "PDF URL is required." };
+  }
+
+  if (USE_MOCK) {
+    await new Promise((r) => setTimeout(r, 400));
+    revalidatePath(`/admin/students/${input.userId}`);
+    revalidatePath("/playbook");
+    return { ok: true };
+  }
+
+  const auth = await requireAdmin();
+  if (!auth.ok) return { ok: false, error: auth.error };
+  const { supabase } = auth;
+
+  const { error } = await supabase.from("playbooks").upsert(
+    {
+      user_id: input.userId,
+      pdf_url: input.pdfUrl,
+      generated_at: new Date().toISOString(),
+    },
+    { onConflict: "user_id" },
+  );
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath(`/admin/students/${input.userId}`);
+  revalidatePath("/playbook");
+  return { ok: true };
+}
+
+// ─── Student profile update (current week, status) ──────────────────────────
+
+interface UpdateStudentInput {
+  userId: string;
+  currentWeek?: number;
+  status?: "active" | "completed" | "paused";
+}
+
+export async function updateStudentAction(
+  input: UpdateStudentInput,
+): Promise<ActionResult> {
+  if (USE_MOCK) {
+    await new Promise((r) => setTimeout(r, 300));
+    revalidatePath(`/admin/students/${input.userId}`);
+    revalidatePath("/admin");
+    return { ok: true };
+  }
+
+  const auth = await requireAdmin();
+  if (!auth.ok) return { ok: false, error: auth.error };
+  const { supabase } = auth;
+
+  const update: Record<string, unknown> = {};
+  if (typeof input.currentWeek === "number") update.current_week = input.currentWeek;
+  if (input.status) update.status = input.status;
+  if (Object.keys(update).length === 0) return { ok: true };
+
+  const { error } = await supabase
+    .from("profiles")
+    .update(update)
+    .eq("user_id", input.userId);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath(`/admin/students/${input.userId}`);
+  revalidatePath("/admin");
   revalidatePath("/dashboard");
   return { ok: true };
 }
