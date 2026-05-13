@@ -208,33 +208,32 @@
     </div>
   </nav>
 
-  <!-- HERO — magazine cover (compact) -->
-  <section id="top" class="relative min-h-[62vh] md:min-h-[72vh] overflow-hidden">
-    <!-- Full-bleed photo -->
-    <div class="absolute inset-0 z-0">
-      <img src="assets/bettina-hero.jpg" alt="Bettina Baranyi, founder of Get Client Ready" class="w-full h-full object-cover object-[70%_center]" loading="eager" />
-      <!-- Dark gradient overlay so text remains readable on the left -->
-      <div class="absolute inset-0 bg-gradient-to-r from-bg-dark via-bg-dark/85 to-bg-dark/10 md:via-bg-dark/65 md:to-transparent"></div>
-      <!-- Subtle bottom fade for CTA visibility -->
-      <div class="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-bg-dark/70 to-transparent"></div>
-    </div>
-
-    <!-- Text overlay -->
-    <div class="relative z-10 max-w-6xl mx-auto px-5 md:px-8 min-h-[62vh] md:min-h-[72vh] flex flex-col justify-center pt-24 pb-14">
-      <div class="max-w-xl reveal">
-        <span class="eyebrow block mb-4">Get Client Ready</span>
-        <h1 class="font-serif font-semibold leading-[1.04] text-4xl md:text-6xl tracking-tight">
-          Every executive has AI.<br>
-          Almost none speak English <em class="accent-text font-medium">with authority.</em>
-        </h1>
-        <p class="mt-5 text-base md:text-lg text-ink-light/90 max-w-lg leading-relaxed">
-          The first AI-powered English performance system built specifically for DACH executives.
-        </p>
-        <p class="mt-2 text-sm text-ink-light/70">
-          6 weeks. Fully automated. Personalised to you.
-        </p>
-        <div class="mt-7">
-          <a href="#quiz" class="btn-accent">Start Closing The Gap</a>
+  <!-- HERO — split layout: text left, full portrait right -->
+  <section id="top" class="relative pt-24 md:pt-28 pb-14 md:pb-20 overflow-hidden">
+    <div class="max-w-6xl mx-auto px-5 md:px-8">
+      <div class="grid md:grid-cols-12 gap-10 md:gap-12 items-center">
+        <!-- Text -->
+        <div class="md:col-span-7 reveal order-2 md:order-1">
+          <span class="eyebrow block mb-4">Get Client Ready</span>
+          <h1 class="font-serif font-semibold leading-[1.04] text-4xl md:text-6xl tracking-tight">
+            Every executive has AI.<br>
+            Almost none speak English <em class="accent-text font-medium">with authority.</em>
+          </h1>
+          <p class="mt-5 text-base md:text-lg text-ink-light/85 max-w-lg leading-relaxed">
+            The first AI-powered English performance system built specifically for DACH executives.
+          </p>
+          <p class="mt-2 text-sm text-ink-muted">
+            6 weeks. Fully automated. Personalised to you.
+          </p>
+          <div class="mt-7">
+            <a href="#quiz" class="btn-accent">Start Closing The Gap</a>
+          </div>
+        </div>
+        <!-- Photo — full portrait visible -->
+        <div class="md:col-span-5 reveal d1 order-1 md:order-2">
+          <div class="aspect-[3/4] w-full max-w-sm md:max-w-none mx-auto md:ml-auto rounded-sm overflow-hidden">
+            <img src="assets/bettina-hero.jpg" alt="Bettina Baranyi, founder of Get Client Ready" class="w-full h-full object-cover object-center" loading="eager" />
+          </div>
         </div>
       </div>
     </div>
