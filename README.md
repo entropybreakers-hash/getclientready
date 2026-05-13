@@ -20,9 +20,9 @@ Domain: `getclientready.entropybreakers.com`.
 ├── CNAME              # Custom domain pin for GitHub Pages
 ├── assets/
 │   ├── bettina-hero.jpg     # Hero portrait (white bg, arms crossed, profile gaze)
-│   ├── bettina-about.png    # About Bettina section (black bg, hand near chin)
+│   ├── bettina-about.jpg    # About Bettina section (dark bg, hand near chin)
 │   ├── bettina-founder.jpg  # Thumbnail next to Founder's Note signature (white bg, side profile)
-│   ├── bettina-final.png    # Final CTA background (black bg, hands on hips)
+│   ├── bettina-final.jpg    # Final CTA background (dark bg, hands on hips)
 │   └── favicon.svg
 └── README.md
 ```
