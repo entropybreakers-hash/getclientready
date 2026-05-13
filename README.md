@@ -19,8 +19,10 @@ Domain: `getclientready.entropybreakers.com`.
 ├── datenschutz.html   # GDPR / DSGVO privacy page
 ├── CNAME              # Custom domain pin for GitHub Pages
 ├── assets/
-│   ├── bettina-hero.png    # Hero portrait (also used in About section as fallback)
-│   ├── bettina-final.png   # Background photo of the Final CTA section
+│   ├── bettina-hero.jpg     # Hero portrait (white bg, 3/4 turn looking back at viewer)
+│   ├── bettina-about.jpg    # About Bettina section (black bg, hand near chin, thoughtful)
+│   ├── bettina-founder.jpg  # Small thumbnail next to Founder's Note signature
+│   ├── bettina-final.jpg    # Background of the Final CTA section (dark bg, power pose)
 │   └── favicon.svg
 └── README.md
 ```
@@ -43,10 +45,22 @@ This version is a surgical rebuild of the previous Framer-style page. All copy p
 
 ## Open placeholders Bettina must fill before going live
 
-- `impressum.html` — exact address, Bezirkshauptmannschaft, Bundesland-Wirtschaftskammer.
-- `datenschutz.html` — same address.
-- Footer LinkedIn / Instagram URLs (currently `#`).
-- `assets/bettina-about.jpg` — currently the About section reuses the hero photo. Drop a square (~600×600) `bettina-about.jpg` (or `.png`) and update `<img src>` on the About section to swap.
+- `impressum.html` + `datenschutz.html` — exact Straße und Hausnummer (rest filled: 6020 Innsbruck, WK Tirol, Magistrat der Stadt Innsbruck).
+- Footer Instagram URL (LinkedIn is set).
+- The four portrait JPGs in `assets/` (see "Photo placement plan" below).
+
+## Photo placement plan
+
+Drop four JPGs into `assets/` with these exact filenames. The HTML already points to them.
+
+| File | Section | Best photo description |
+|---|---|---|
+| `bettina-hero.jpg` | Hero (top of page) | White background, body turned with shoulder back, looking over shoulder at viewer — magazine-cover feel, premium and inviting. |
+| `bettina-about.jpg` | "Your Mentor" section | Black background, hand near chin, direct thoughtful gaze — author/founder profile feel. |
+| `bettina-founder.jpg` | Tiny circular thumbnail beside the "— Bettina" signature in the Founder's Note section | White background, side profile or elegant pose — soft, signature-companion feel. |
+| `bettina-final.jpg` | Background image of the Final CTA section (dark, low opacity) | Black background, power stance (hands on hips or arms crossed), direct gaze — "stop losing rooms you should own" energy. |
+
+Recommended dimensions: hero ~1200×1500 vertical, about ~1200×1200 square, founder ~600×600 square, final ~1600×2000 vertical (it sits behind text at low opacity, so framing should leave the upper portion empty if possible).
 
 ## Local preview
 
