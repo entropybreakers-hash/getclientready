@@ -20,6 +20,7 @@ import {
 } from "./mock";
 import { getServerClient } from "./supabase/server";
 import type {
+  AdminSubmissionRow,
   Exercise,
   Feedback,
   Module,
@@ -450,6 +451,114 @@ export async function listStudents(): Promise<Profile[]> {
     .order("started_at", { ascending: false });
   if (error) throw error;
   return (data ?? []) as Profile[];
+}
+
+export interface AdminSubmissionListItem extends AdminSubmissionRow {
+  module_title: string;
+}
+
+export async function listSubmissionsForAdmin(options?: {
+  status?: "pending_review" | "feedback_ready" | "all";
+  limit?: number;
+}): Promise<AdminSubmissionListItem[]> {
+  const status = options?.status ?? "pending_review";
+  const limit = options?.limit ?? 100;
+
+  if (USE_MOCK) {
+    const subs = mockSubmissionsWithRelations();
+    const filtered = status === "all" ? subs : subs.filter((s) => s.status === status);
+    return filtered.slice(0, limit).map((s) => ({
+      ...s,
+      student: {
+        user_id: mockProfile.user_id,
+        email: mockProfile.email,
+        first_name: mockProfile.first_name,
+        last_name: mockProfile.last_name,
+        tier: mockProfile.tier,
+        current_week: mockProfile.current_week,
+      },
+      module_title:
+        mockModulesWithStatus().find((m) => m.id === s.exercise.module_id)?.title ?? "",
+    }));
+  }
+
+  const supabase = await getServerClient();
+  let query = supabase
+    .from("submissions")
+    .select(
+      `*,
+       exercise:exercises (
+         id, module_id, title, prompt, type, "order",
+         modules ( id, slug, title, week_number )
+       ),
+       student:profiles!submissions_user_id_fkey (
+         user_id, email, first_name, last_name, tier, current_week
+       ),
+       feedback ( * )`,
+    )
+    .order("submitted_at", { ascending: true })
+    .limit(limit);
+
+  if (status !== "all") query = query.eq("status", status);
+
+  const { data, error } = await query;
+  if (error) throw error;
+
+  return (data ?? []).map((row) => {
+    const r = row as SubmissionRow & {
+      exercise: (ExerciseRow & { modules: { id: string; slug: string; title: string; week_number: number } | null }) | null;
+      student: AdminSubmissionRow["student"] | null;
+      feedback: FeedbackRow[] | FeedbackRow | null;
+    };
+    const fb = Array.isArray(r.feedback) ? r.feedback[0] : r.feedback;
+    return {
+      ...submissionFromRow(r),
+      exercise: r.exercise ? exerciseFromRow(r.exercise) : ({} as Exercise),
+      student: r.student ?? ({} as AdminSubmissionRow["student"]),
+      feedback: fb ? (fb as Feedback) : null,
+      module_title: r.exercise?.modules?.title ?? "",
+    };
+  });
+}
+
+export async function getAdminSubmissionById(
+  id: string,
+): Promise<AdminSubmissionListItem | null> {
+  if (USE_MOCK) {
+    const all = await listSubmissionsForAdmin({ status: "all" });
+    return all.find((s) => s.id === id) ?? null;
+  }
+  const supabase = await getServerClient();
+  const { data, error } = await supabase
+    .from("submissions")
+    .select(
+      `*,
+       exercise:exercises (
+         id, module_id, title, prompt, type, "order",
+         modules ( id, slug, title, week_number )
+       ),
+       student:profiles!submissions_user_id_fkey (
+         user_id, email, first_name, last_name, tier, current_week
+       ),
+       feedback ( * )`,
+    )
+    .eq("id", id)
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) return null;
+  const r = data as SubmissionRow & {
+    exercise: (ExerciseRow & { modules: { id: string; slug: string; title: string; week_number: number } | null }) | null;
+    student: AdminSubmissionRow["student"] | null;
+    feedback: FeedbackRow[] | FeedbackRow | null;
+  };
+  const fb = Array.isArray(r.feedback) ? r.feedback[0] : r.feedback;
+  return {
+    ...submissionFromRow(r),
+    exercise: r.exercise ? exerciseFromRow(r.exercise) : ({} as Exercise),
+    student: r.student ?? ({} as AdminSubmissionRow["student"]),
+    feedback: fb ? (fb as Feedback) : null,
+    module_title: r.exercise?.modules?.title ?? "",
+  };
 }
 
 export async function getFeedbackForSubmission(

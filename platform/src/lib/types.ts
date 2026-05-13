@@ -90,3 +90,9 @@ export interface SubmissionWithRelations extends Submission {
   exercise: Exercise;
   feedback: Feedback | null;
 }
+
+export interface AdminSubmissionRow extends Submission {
+  exercise: Exercise;
+  student: Pick<Profile, "user_id" | "email" | "first_name" | "last_name" | "tier" | "current_week">;
+  feedback: Feedback | null;
+}
