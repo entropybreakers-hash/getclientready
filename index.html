@@ -190,7 +190,7 @@
   <nav class="fixed top-0 left-0 right-0 z-50 nav-blur border-b border-white/5">
     <div class="max-w-6xl mx-auto px-5 md:px-8 py-4 flex items-center justify-between">
       <a href="#top" class="font-serif text-base md:text-lg tracking-widest uppercase font-semibold">
-        Get <em class="accent-text">Client</em> Ready
+        Get <em class="accent-text">Clie<s class="decoration-2">n't</s></em> Ready
       </a>
       <a href="#pricing" class="hidden md:inline-flex btn-accent" style="padding:10px 20px; font-size:.68rem;">
         Close The Gap
@@ -208,30 +208,33 @@
     </div>
   </nav>
 
-  <!-- HERO -->
-  <section id="top" class="relative pt-24 md:pt-28 pb-16 md:pb-24 overflow-hidden">
-    <div class="max-w-6xl mx-auto px-5 md:px-8">
-      <div class="grid md:grid-cols-2 gap-10 md:gap-14 items-center">
-        <div class="reveal">
-          <span class="eyebrow block mb-5">Get Client Ready</span>
-          <h1 class="font-serif font-semibold leading-[1.04] text-5xl md:text-6xl lg:text-7xl tracking-tight">
-            Every executive has AI.<br>
-            Almost none speak English <em class="accent-text font-medium">with authority.</em>
-          </h1>
-          <p class="mt-7 text-lg md:text-xl text-ink-light/85 max-w-xl leading-relaxed">
-            The first AI-powered English performance system built specifically for DACH executives.
-          </p>
-          <p class="mt-3 text-sm md:text-base text-ink-muted">
-            6 weeks. Fully automated. Personalised to you.
-          </p>
-          <div class="mt-9 flex flex-col sm:flex-row gap-3">
-            <a href="#pricing" class="btn-accent">Start Closing The Gap</a>
-          </div>
-        </div>
-        <div class="reveal d1 relative">
-          <div class="aspect-[4/5] w-full max-w-md mx-auto md:ml-auto rounded-sm overflow-hidden">
-            <img src="assets/bettina-hero.jpg" alt="Bettina Baranyi, founder of Get Client Ready" class="w-full h-full object-cover" loading="eager" />
-          </div>
+  <!-- HERO — full-bleed magazine cover -->
+  <section id="top" class="relative min-h-[88vh] md:min-h-[92vh] overflow-hidden">
+    <!-- Full-bleed photo -->
+    <div class="absolute inset-0 z-0">
+      <img src="assets/bettina-hero.jpg" alt="Bettina Baranyi, founder of Get Client Ready" class="w-full h-full object-cover object-[70%_center]" loading="eager" />
+      <!-- Dark gradient overlay so text remains readable on the left -->
+      <div class="absolute inset-0 bg-gradient-to-r from-bg-dark via-bg-dark/85 to-bg-dark/10 md:via-bg-dark/70 md:to-transparent"></div>
+      <!-- Subtle bottom fade for CTA visibility -->
+      <div class="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-bg-dark/80 to-transparent"></div>
+    </div>
+
+    <!-- Text overlay -->
+    <div class="relative z-10 max-w-6xl mx-auto px-5 md:px-8 min-h-[88vh] md:min-h-[92vh] flex flex-col justify-center pt-24 pb-16">
+      <div class="max-w-xl reveal">
+        <span class="eyebrow block mb-5">Get Client Ready</span>
+        <h1 class="font-serif font-semibold leading-[1.04] text-5xl md:text-7xl tracking-tight">
+          Every executive has AI.<br>
+          Almost none speak English <em class="accent-text font-medium">with authority.</em>
+        </h1>
+        <p class="mt-7 text-lg md:text-xl text-ink-light/90 max-w-lg leading-relaxed">
+          The first AI-powered English performance system built specifically for DACH executives.
+        </p>
+        <p class="mt-3 text-sm md:text-base text-ink-light/70">
+          6 weeks. Fully automated. Personalised to you.
+        </p>
+        <div class="mt-9">
+          <a href="#pricing" class="btn-accent">Start Closing The Gap</a>
         </div>
       </div>
     </div>
@@ -293,7 +296,7 @@
         </p>
       </div>
 
-      <div class="mt-14 grid md:grid-cols-3 gap-5">
+      <div class="mt-14 grid md:grid-cols-2 gap-5 max-w-4xl mx-auto">
         <div class="card-dark rounded-sm p-7 reveal">
           <div class="eyebrow mb-3">AI Tools</div>
           <h3 class="font-serif text-2xl font-medium mb-5">ChatGPT, Duolingo AI, Google Translate</h3>
@@ -311,16 +314,6 @@
             <li class="flex gap-3"><span class="text-warn">✕</span><span>Available 2 hours a week. Your pressure moments don't wait for Tuesday.</span></li>
             <li class="flex gap-3"><span class="text-warn">✕</span><span>They correct your English. They don't rebuild how you perform in it.</span></li>
             <li class="flex gap-3"><span class="text-warn">✕</span><span>€100–€150 per hour, indefinitely, with no defined outcome.</span></li>
-          </ul>
-        </div>
-
-        <div class="card-dark rounded-sm p-7 reveal d2">
-          <div class="eyebrow mb-3">Online Courses</div>
-          <h3 class="font-serif text-2xl font-medium mb-5">Video libraries, PDFs, generic content</h3>
-          <ul class="space-y-3 text-sm md:text-base text-ink-light/80">
-            <li class="flex gap-3"><span class="text-warn">✕</span><span>Built for the average student. You are not average.</span></li>
-            <li class="flex gap-3"><span class="text-warn">✕</span><span>You watch. You take notes. Nothing changes under pressure.</span></li>
-            <li class="flex gap-3"><span class="text-warn">✕</span><span>No feedback. No adaptation. No accountability.</span></li>
           </ul>
         </div>
       </div>
@@ -803,12 +796,12 @@
     <div class="max-w-6xl mx-auto px-5 md:px-8">
       <div class="grid md:grid-cols-3 gap-8 md:gap-12">
         <div>
-          <div class="font-serif text-lg tracking-widest uppercase">Get <em class="accent-text">Client</em> Ready</div>
+          <div class="font-serif text-lg tracking-widest uppercase">Get <em class="accent-text">Clie<s class="decoration-2">n't</s></em> Ready</div>
           <p class="mt-2 text-sm text-ink-muted">by Entropy Breakers</p>
         </div>
         <div class="text-sm text-ink-light/75 leading-relaxed">
           <div><strong>Bettina Baranyi</strong></div>
-          <div>English Performance Coach</div>
+          <div>Englisch Performance Coach</div>
           <div>Tirol, Austria</div>
           <a href="mailto:hallo@entropybreakers.com" class="text-accent hover:underline mt-2 inline-block">hallo@entropybreakers.com</a>
         </div>
