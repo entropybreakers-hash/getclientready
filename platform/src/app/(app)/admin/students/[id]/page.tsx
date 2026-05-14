@@ -69,6 +69,7 @@ export default async function AdminStudentPage({
 
       {/* Onboarding */}
       <WelcomeMessageDialog
+        userId={student.user_id}
         studentFirstName={student.first_name || studentName}
         studentEmail={student.email}
         studentWhatsapp={student.whatsapp ?? null}

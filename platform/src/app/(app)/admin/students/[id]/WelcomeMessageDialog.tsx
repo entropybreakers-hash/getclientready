@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input, Label } from "@/components/ui/Input";
+import { sendWelcomeEmailAction } from "@/lib/actions";
 
 interface Props {
+  userId: string;
   studentFirstName: string;
   studentEmail: string;
   studentWhatsapp?: string | null;
@@ -12,6 +14,7 @@ interface Props {
 }
 
 export function WelcomeMessageDialog({
+  userId,
   studentFirstName,
   studentEmail,
   studentWhatsapp,
@@ -21,6 +24,26 @@ export function WelcomeMessageDialog({
   const [phone, setPhone] = useState(studentWhatsapp ?? "");
   const [tempPassword, setTempPassword] = useState("");
   const [copied, setCopied] = useState(false);
+  const [emailing, startEmailing] = useTransition();
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [emailSent, setEmailSent] = useState(false);
+
+  function onSendEmail() {
+    setEmailError(null);
+    setEmailSent(false);
+    startEmailing(async () => {
+      const res = await sendWelcomeEmailAction({
+        userId,
+        tempPassword: tempPassword || undefined,
+      });
+      if (!res.ok) {
+        setEmailError(res.error ?? "Send failed.");
+        return;
+      }
+      setEmailSent(true);
+      setTimeout(() => setEmailSent(false), 3000);
+    });
+  }
 
   const message = `Hi ${studentFirstName} — welcome to Get Client Ready.
 
@@ -106,7 +129,7 @@ Any questions, just message me back here.
         </pre>
       </div>
 
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-3 items-center">
         {waUrl ? (
           <a
             href={waUrl}
@@ -129,11 +152,26 @@ Any questions, just message me back here.
         >
           {copied ? "Copied ✓" : "Copy message"}
         </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={onSendEmail}
+          disabled={emailing}
+        >
+          {emailing ? "Sending…" : emailSent ? "Sent ✓" : "Send by email"}
+        </Button>
       </div>
 
+      {emailError && (
+        <p className="text-sm text-warn bg-warn/10 border border-warn/30 rounded-sm px-3 py-2">
+          {emailError}
+        </p>
+      )}
+
       <p className="text-xs text-ink-muted">
-        Tip: don&apos;t paste the temporary password into a public chat. Send it on a
-        different channel (e.g. SMS) or set it once with the student over a call.
+        Tip: WhatsApp is for the heads-up. For the temp password, send it separately
+        (SMS, in-person, or use the email button — Resend delivers from your own domain).
       </p>
     </div>
   );
