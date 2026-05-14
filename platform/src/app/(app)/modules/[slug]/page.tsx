@@ -114,7 +114,7 @@ export default async function ModulePage({
       </section>
 
       {/* Bottom nav */}
-      <nav className="flex items-center justify-between pt-8 border-t border-white/5 text-sm">
+      <nav className="flex items-center justify-between pt-8 border-t border-white/5 text-sm gap-4 flex-wrap">
         {prev && prev.status !== "locked" ? (
           <Link
             href={`/modules/${prev.slug}`}

@@ -11,6 +11,8 @@ import {
 } from "@/lib/data";
 import { formatDate } from "@/lib/utils";
 import { StudentWeekForm } from "./StudentWeekForm";
+import { WelcomeMessageDialog } from "./WelcomeMessageDialog";
+import { PLATFORM_URL } from "@/lib/env";
 
 export const dynamic = "force-dynamic";
 
@@ -39,11 +41,12 @@ export default async function AdminStudentPage({
 
   return (
     <div className="max-w-5xl mx-auto px-5 md:px-8 py-10 md:py-14 space-y-10">
-      <nav className="text-xs tracking-[0.18em] uppercase text-ink-muted">
+      <nav className="text-xs tracking-[0.18em] uppercase text-ink-muted flex flex-wrap gap-x-1">
         <Link href="/admin" className="hover:text-accent">
           Admin
-        </Link>{" "}
-        / {studentName}
+        </Link>
+        <span>/</span>
+        <span className="break-words">{studentName}</span>
       </nav>
 
       <header className="flex items-start justify-between flex-wrap gap-4">
@@ -63,6 +66,14 @@ export default async function AdminStudentPage({
           )}
         </div>
       </header>
+
+      {/* Onboarding */}
+      <WelcomeMessageDialog
+        studentFirstName={student.first_name || studentName}
+        studentEmail={student.email}
+        studentWhatsapp={student.whatsapp ?? null}
+        platformUrl={PLATFORM_URL}
+      />
 
       {/* Progress + week control */}
       <section className="bg-bg-card border border-white/5 rounded-sm p-6 md:p-8">

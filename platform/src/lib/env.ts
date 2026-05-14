@@ -21,6 +21,10 @@ export const LANDING_URL =
   process.env.NEXT_PUBLIC_LANDING_URL ??
   "https://getclientready.entropybreakers.com";
 
+// Platform URL used in admin-generated WhatsApp welcome messages.
+export const PLATFORM_URL =
+  process.env.NEXT_PUBLIC_PLATFORM_URL ?? "https://app.entropybreakers.com";
+
 // Server-only — must NOT be NEXT_PUBLIC_ (would leak to client bundle).
 // Only read inside server actions / server components.
 export const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY ?? "";
