@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { USE_MOCK } from "./env";
 import { getServerClient } from "./supabase/server";
+import { generateFeedbackDraft } from "./ai-feedback";
+import { getAdminSubmissionById } from "./data";
 
 async function requireAdmin() {
   const supabase = await getServerClient();
@@ -97,6 +99,59 @@ export async function submitFeedbackAction(
   revalidatePath("/admin/submissions");
   revalidatePath("/dashboard");
   return { ok: true };
+}
+
+// ─── AI feedback draft ──────────────────────────────────────────────────────
+
+interface DraftResult extends ActionResult {
+  draft?: { content: string; patterns: string[] };
+}
+
+export async function generateFeedbackDraftAction(
+  submissionId: string,
+): Promise<DraftResult> {
+  if (USE_MOCK) {
+    await new Promise((r) => setTimeout(r, 1200));
+    return {
+      ok: true,
+      draft: {
+        content:
+          "**What I'm seeing:**\n\n[Mock draft] In live mode this will be a real Claude-generated draft based on the student's actual submission, exercise prompt, and your three-dimension framework.\n\n**The pattern:**\n\nMock mode shortcut.\n\n**What we'll do next:**\n\nSet ANTHROPIC_API_KEY in Vercel and switch off mock mode to enable real drafts.",
+        patterns: ["translation lag", "hedging"],
+      },
+    };
+  }
+
+  const auth = await requireAdmin();
+  if (!auth.ok) return { ok: false, error: auth.error };
+
+  const submission = await getAdminSubmissionById(submissionId);
+  if (!submission) return { ok: false, error: "Submission not found." };
+  if (!submission.exercise || !submission.exercise.id) {
+    return { ok: false, error: "Submission is missing exercise context." };
+  }
+
+  try {
+    const draft = await generateFeedbackDraft({
+      studentFirstName:
+        submission.student.first_name || submission.student.email,
+      weekNumber: submission.exercise.week_number,
+      moduleTitle: submission.module_title,
+      exerciseTitle: submission.exercise.title,
+      exercisePrompt: submission.exercise.prompt,
+      submissionContent: submission.content,
+      submissionAudioUrl: submission.audio_url ?? null,
+    });
+    return {
+      ok: true,
+      draft: { content: draft.content, patterns: draft.patterns_identified },
+    };
+  } catch (err) {
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : "AI draft failed.",
+    };
+  }
 }
 
 // ─── Pattern report admin ───────────────────────────────────────────────────
