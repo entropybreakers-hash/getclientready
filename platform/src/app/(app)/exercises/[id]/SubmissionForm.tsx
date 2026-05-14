@@ -15,7 +15,6 @@ interface SubmissionFormProps {
 }
 
 const DRAFT_KEY = (id: string) => `gcr_draft_${id}`;
-const MIN_TEXT_CHARS = 300;
 
 export function SubmissionForm({
   exerciseId,
@@ -113,10 +112,8 @@ export function SubmissionForm({
     e.preventDefault();
     setError(null);
 
-    if (exerciseType === "text" && content.trim().length < MIN_TEXT_CHARS) {
-      setError(
-        `Please write at least ${MIN_TEXT_CHARS} characters — specifics matter more than polish.`,
-      );
+    if (exerciseType === "text" && content.trim().length === 0) {
+      setError("Please write something before submitting.");
       return;
     }
     if (exerciseType === "audio" && !audio) {
@@ -190,15 +187,18 @@ export function SubmissionForm({
         className={isAudio ? "min-h-[140px]" : "min-h-[280px]"}
       />
 
-      <div className="flex items-center justify-between text-xs text-ink-muted">
+      <div className="flex items-center justify-between text-xs text-ink-muted gap-3 flex-wrap">
         <span>
           {content.length} characters · {wordCount} words
-          {exerciseType === "text" && content.length < MIN_TEXT_CHARS && (
-            <span className="text-warn ml-2">(min {MIN_TEXT_CHARS})</span>
-          )}
         </span>
         <span>Draft saved automatically</span>
       </div>
+
+      {!isAudio && (
+        <p className="text-xs text-ink-muted italic leading-relaxed">
+          The more detailed your response, the sharper the analysis you&apos;ll get back. Match the depth to what the prompt is asking — there&apos;s no minimum length.
+        </p>
+      )}
 
       {submitting && (
         <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
