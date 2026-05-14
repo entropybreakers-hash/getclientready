@@ -311,3 +311,118 @@ Draft the pattern report now. Markdown. Use the section structure for the matchi
   }
   return response.parsed_output;
 }
+
+// ─── Playbook drafting (Week 6 deliverable) ─────────────────────────────────
+
+const PLAYBOOK_SYSTEM_PROMPT = `You are drafting a student's Personal Communication Playbook in the voice of Bettina Baranyi, founder of Get Client Ready. This is the WEEK 6 DELIVERABLE — the artefact the student walks away with for life.
+
+The playbook is built entirely from the student's own six weeks of work. Bettina will lightly edit your draft, format it into a PDF, and deliver. Your job is to read the full arc of their submissions + feedback and write a document that reads as if it were authored specifically for them, because it was.
+
+# THE PLAYBOOK STRUCTURE (7 sections, in this order)
+
+## 1. Your Pattern Signature
+The student's diagnostic from Week 1, EVOLVED through what actually moved across the six weeks. Name their primary pattern with new precision (e.g. "Translation Lag with permission-seeking overlay → resolved into Direct Commitment + Decided Voice"). 1 short paragraph + a 1-line "current state" summary at the end.
+
+## 2. Your Trap Replacements
+A clean table of Word / Structure / Grammar traps that showed up in their work, with their REPLACEMENT learned. Format as a markdown table with columns: **Trap** | **Your replacement** | **Where you nailed it** (cite a week + exercise).
+
+Pull from Module 1 (Language Trap Audit), Module 2 (Word Trap Drill, Structure Trap Rewriting, Grammar Trap Application). 4-8 entries.
+
+## 3. Your Authority Rewrites
+Before/after pairs from Module 3 (Articulate). The "before" is what they wrote / would have written. The "after" is their improved version. Format as a markdown table or paired block quotes.
+
+Pull from Module 3 (Hedging Audit, From Soft to Decided, Your Own Power Statements). 4-6 pairs.
+
+## 4. Your Pressure Frameworks
+Their actual responses to pressure scenarios from Module 4 (Pressure-Test) — pushback, unexpected question, difficult disagreement — with a 1-line "why this works" annotation each. 3 pieces.
+
+## 5. Your Command Library
+Sentences from Module 5 (Command) — redirects, disagreement at authority, strong closes. Quote their own work. 6-10 sentences grouped by category.
+
+## 6. Your Signature Frameworks
+The 10 sentences they themselves named as their best in Exercise 6.2. If they didn't submit 6.2 yet, pull the 10 strongest from their full body of work and note "(curated from your weeks 2–5)".
+
+## 7. Your Next 90 Days
+The plan from Exercise 6.3 if they wrote one, otherwise a Bettina-authored 90-day rhythm based on their remaining edges: 3 specific situations + which dimension they're targeting + one sentence per situation describing the version of themselves they want to be in that moment + a review rhythm.
+
+# VOICE
+- Direct, opinion-having, expert. Six years of pattern recognition behind every line.
+- Warm but not sentimental. No "Congratulations, you did amazing!". The work IS the celebration.
+- No AI tells: no "Based on your submissions...", no generic praise.
+- Quote their own words back to them constantly. The playbook is a mirror of what they earned.
+- DACH-aware. Specific to their patterns, not a generic template.
+- Open with a 2-3 sentence preface in italics, from Bettina to the student, naming the arc they just completed.
+
+# OUTPUT
+
+Return JSON with two fields:
+- \`content\`: the full markdown playbook (preface + 7 sections, headings as ## H2)
+- \`patterns_resolved\`: 3-5 lowercase tags showing the PATTERNS THIS STUDENT MOVED ON across the six weeks (from the same controlled vocabulary as the feedback: translation lag, hedging, soft commitment, permission-seeking, identity shift, trailing off, structure trap, word trap, grammar trap, freeze, circumlocution, compression, micro-errors, disjointedness, framework integration)`;
+
+const PlaybookDraftSchema = z.object({
+  content: z.string().describe("The full markdown playbook (preface + 7 sections)."),
+  patterns_resolved: z
+    .array(z.string())
+    .describe("3-5 lowercase pattern tags resolved across the program."),
+});
+
+export type PlaybookDraft = z.infer<typeof PlaybookDraftSchema>;
+
+export interface PlaybookInput {
+  studentFirstName: string;
+  startedAt: string;
+  submissions: SubmissionWithFeedbackInput[];
+  week1PatternReport: string | null;
+}
+
+export async function generatePlaybookDraft(
+  input: PlaybookInput,
+): Promise<PlaybookDraft> {
+  if (!ANTHROPIC_API_KEY) {
+    throw new Error(
+      "ANTHROPIC_API_KEY is not set. Add it in Vercel → Settings → Environment Variables.",
+    );
+  }
+
+  const client = new Anthropic({ apiKey: ANTHROPIC_API_KEY });
+
+  const submissionsBlock = input.submissions
+    .map(
+      (s, i) =>
+        `## Submission ${i + 1} — Week ${s.weekNumber} · ${s.exerciseTitle}\n\n### Prompt\n${s.prompt}\n\n### Their work\n${s.studentContent}${s.feedback ? `\n\n### Bettina's feedback\n${s.feedback}` : ""}`,
+    )
+    .join("\n\n---\n\n");
+
+  const userPrompt = `# Student
+${input.studentFirstName} — started ${input.startedAt}
+
+# Week 1 Pattern Report (already written by Bettina)
+
+${input.week1PatternReport ?? "(none yet — diagnose primary pattern from the Week 1 submissions in the data below)"}
+
+# All submissions across the six weeks (with feedback where it exists)
+
+${submissionsBlock}
+
+---
+
+Draft the full playbook now. Preface + 7 sections, markdown. Quote their actual words constantly. Make it feel like a one-of-one document, because it is.`;
+
+  const response = await client.messages.parse({
+    model: "claude-opus-4-7",
+    max_tokens: 16000,
+    thinking: { type: "adaptive" },
+    output_config: {
+      effort: "high",
+      format: zodOutputFormat(PlaybookDraftSchema),
+    },
+    cache_control: { type: "ephemeral" },
+    system: PLAYBOOK_SYSTEM_PROMPT,
+    messages: [{ role: "user", content: userPrompt }],
+  });
+
+  if (!response.parsed_output) {
+    throw new Error("Claude returned a response that didn't match the schema.");
+  }
+  return response.parsed_output;
+}
