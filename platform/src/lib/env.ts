@@ -20,3 +20,7 @@ export const SUPPORT_WHATSAPP =
 export const LANDING_URL =
   process.env.NEXT_PUBLIC_LANDING_URL ??
   "https://getclientready.entropybreakers.com";
+
+// Server-only — must NOT be NEXT_PUBLIC_ (would leak to client bundle).
+// Only read inside server actions / server components.
+export const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY ?? "";

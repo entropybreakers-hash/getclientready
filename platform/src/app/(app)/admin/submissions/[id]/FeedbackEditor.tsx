@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Textarea, Input, Label } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
 import { Markdown } from "@/components/ui/Markdown";
-import { submitFeedbackAction } from "@/lib/actions";
+import { generateFeedbackDraftAction, submitFeedbackAction } from "@/lib/actions";
 
 interface FeedbackEditorProps {
   submissionId: string;
@@ -38,6 +38,9 @@ export function FeedbackEditor({
   const [patterns, setPatterns] = useState<string[]>(initialPatterns);
   const [newPattern, setNewPattern] = useState("");
   const [preview, setPreview] = useState(false);
+  const [drafting, startDrafting] = useTransition();
+  const [draftError, setDraftError] = useState<string | null>(null);
+  const [confirmReplace, setConfirmReplace] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -69,6 +72,28 @@ export function FeedbackEditor({
     setPatterns(patterns.filter((x) => x !== p));
   }
 
+  function onGenerateDraft() {
+    if (content.trim() && !confirmReplace) {
+      setConfirmReplace(true);
+      return;
+    }
+    setConfirmReplace(false);
+    setDraftError(null);
+    startDrafting(async () => {
+      const res = await generateFeedbackDraftAction(submissionId);
+      if (!res.ok || !res.draft) {
+        setDraftError(res.error ?? "Draft generation failed.");
+        return;
+      }
+      onContentChange(res.draft.content);
+      // Merge AI-suggested patterns with existing ones (dedupe).
+      const merged = Array.from(
+        new Set([...patterns, ...res.draft.patterns.map((p) => p.toLowerCase())]),
+      );
+      setPatterns(merged);
+    });
+  }
+
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -96,30 +121,72 @@ export function FeedbackEditor({
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
-      <div className="flex items-center gap-2 text-xs">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <div className="flex items-center gap-2 text-xs">
+          <button
+            type="button"
+            onClick={() => setPreview(false)}
+            className={
+              !preview
+                ? "px-3 py-1 bg-accent text-bg-dark rounded-sm font-medium tracking-[0.18em] uppercase"
+                : "px-3 py-1 border border-white/10 text-ink-muted hover:text-accent rounded-sm tracking-[0.18em] uppercase"
+            }
+          >
+            Write
+          </button>
+          <button
+            type="button"
+            onClick={() => setPreview(true)}
+            className={
+              preview
+                ? "px-3 py-1 bg-accent text-bg-dark rounded-sm font-medium tracking-[0.18em] uppercase"
+                : "px-3 py-1 border border-white/10 text-ink-muted hover:text-accent rounded-sm tracking-[0.18em] uppercase"
+            }
+          >
+            Preview
+          </button>
+        </div>
+
         <button
           type="button"
-          onClick={() => setPreview(false)}
-          className={
-            !preview
-              ? "px-3 py-1 bg-accent text-bg-dark rounded-sm font-medium tracking-[0.18em] uppercase"
-              : "px-3 py-1 border border-white/10 text-ink-muted hover:text-accent rounded-sm tracking-[0.18em] uppercase"
-          }
+          onClick={onGenerateDraft}
+          disabled={drafting}
+          className="inline-flex items-center gap-1.5 px-3 py-1 border border-accent/40 text-accent hover:bg-accent/10 rounded-sm tracking-[0.18em] uppercase text-xs font-medium transition-colors disabled:opacity-50"
         >
-          Write
-        </button>
-        <button
-          type="button"
-          onClick={() => setPreview(true)}
-          className={
-            preview
-              ? "px-3 py-1 bg-accent text-bg-dark rounded-sm font-medium tracking-[0.18em] uppercase"
-              : "px-3 py-1 border border-white/10 text-ink-muted hover:text-accent rounded-sm tracking-[0.18em] uppercase"
-          }
-        >
-          Preview
+          {drafting ? (
+            <>
+              <span className="inline-block w-3 h-3 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+              Drafting…
+            </>
+          ) : confirmReplace ? (
+            "Replace with AI draft?"
+          ) : content.trim() ? (
+            "↻ AI draft"
+          ) : (
+            "✨ AI draft"
+          )}
         </button>
       </div>
+
+      {confirmReplace && !drafting && (
+        <p className="text-xs text-ink-muted bg-warn/10 border border-warn/30 rounded-sm px-3 py-2">
+          You already have content — clicking AI draft again will replace it. Click once more to confirm, or{" "}
+          <button
+            type="button"
+            onClick={() => setConfirmReplace(false)}
+            className="text-accent hover:underline"
+          >
+            cancel
+          </button>
+          .
+        </p>
+      )}
+
+      {draftError && (
+        <p className="text-sm text-warn bg-warn/10 border border-warn/30 rounded-sm px-3 py-2">
+          {draftError}
+        </p>
+      )}
 
       {preview ? (
         <div className="min-h-[280px] bg-bg-dark border border-white/10 rounded-sm p-4">
