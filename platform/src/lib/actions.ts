@@ -3,8 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { USE_MOCK } from "./env";
 import { getServerClient } from "./supabase/server";
-import { generateFeedbackDraft } from "./ai-feedback";
-import { getAdminSubmissionById } from "./data";
+import { generateFeedbackDraft, generatePatternReportDraft } from "./ai-feedback";
+import { getAdminSubmissionById, listSubmissionsForAdmin, getStudentById } from "./data";
 
 async function requireAdmin() {
   const supabase = await getServerClient();
@@ -265,6 +265,88 @@ export async function savePatternReportAction(
   revalidatePath("/dashboard");
   revalidatePath("/profile");
   return { ok: true };
+}
+
+interface PatternReportDraftResult extends ActionResult {
+  draft?: { content: string; patterns: string[] };
+}
+
+export async function generatePatternReportDraftAction(
+  userId: string,
+  type: "diagnostic_week1" | "summary_week6",
+): Promise<PatternReportDraftResult> {
+  if (USE_MOCK) {
+    await new Promise((r) => setTimeout(r, 1500));
+    return {
+      ok: true,
+      draft: {
+        content: `**Your primary pattern:** [Mock draft] Translation Lag with permission-seeking overlay.\n\n**Secondary patterns:** Hedging, structure trap on prepositions.\n\n**Strongest signal:** Mock mode shortcut.\n\n**Where it costs you most:** Mock placeholder.\n\n**What we'll do in the next five weeks:** Set ANTHROPIC_API_KEY in Vercel to get a real draft.`,
+        patterns: ["translation lag", "hedging"],
+      },
+    };
+  }
+
+  const auth = await requireAdmin();
+  if (!auth.ok) return { ok: false, error: auth.error };
+
+  const student = await getStudentById(userId);
+  if (!student) return { ok: false, error: "Student not found." };
+
+  // Pull the relevant submissions.
+  const weekFilter =
+    type === "diagnostic_week1" ? 1 : null; // null means all weeks
+  const allSubs = await listSubmissionsForAdmin({
+    status: "all",
+    limit: 200,
+  });
+  const studentSubs = allSubs
+    .filter((s) => s.user_id === userId)
+    .filter((s) =>
+      weekFilter === null ? true : s.exercise.week_number === weekFilter,
+    )
+    .sort(
+      (a, b) =>
+        a.exercise.week_number - b.exercise.week_number ||
+        a.exercise.order - b.exercise.order,
+    );
+
+  if (studentSubs.length === 0) {
+    return {
+      ok: false,
+      error:
+        type === "diagnostic_week1"
+          ? "No Week 1 submissions yet for this student."
+          : "No submissions yet for this student.",
+    };
+  }
+
+  try {
+    const draft = await generatePatternReportDraft({
+      studentFirstName: student.first_name || student.email,
+      type,
+      submissions: studentSubs.map((s) => ({
+        weekNumber: s.exercise.week_number,
+        exerciseTitle: s.exercise.title,
+        prompt: s.exercise.prompt,
+        studentContent: s.audio_url
+          ? `[Audio submission] ${s.content}`
+          : s.content,
+        feedback: s.feedback?.content ?? null,
+      })),
+    });
+    return {
+      ok: true,
+      draft: {
+        content: draft.content,
+        patterns: draft.patterns_identified,
+      },
+    };
+  } catch (err) {
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : "AI draft failed.",
+    };
+  }
 }
 
 // ─── Playbook admin ─────────────────────────────────────────────────────────
