@@ -491,9 +491,6 @@ export async function listSubmissionsForAdmin(options?: {
          id, module_id, title, prompt, type, "order",
          modules ( id, slug, title, week_number )
        ),
-       student:profiles!submissions_user_id_fkey (
-         user_id, email, first_name, last_name, tier, current_week
-       ),
        feedback ( * )`,
     )
     .order("submitted_at", { ascending: true })
@@ -504,17 +501,37 @@ export async function listSubmissionsForAdmin(options?: {
   const { data, error } = await query;
   if (error) throw error;
 
+  // Second query: profiles for the unique user_ids. We can't embed
+  // profiles via PostgREST because submissions.user_id FKs auth.users(id),
+  // not profiles(user_id), and PostgREST won't follow that indirect path.
+  const userIds = Array.from(
+    new Set(((data ?? []) as SubmissionRow[]).map((r) => r.user_id)),
+  );
+  let studentsByUserId = new Map<string, AdminSubmissionRow["student"]>();
+  if (userIds.length > 0) {
+    const { data: profiles, error: profErr } = await supabase
+      .from("profiles")
+      .select("user_id, email, first_name, last_name, tier, current_week")
+      .in("user_id", userIds);
+    if (profErr) throw profErr;
+    studentsByUserId = new Map(
+      (profiles ?? []).map((p) => [
+        (p as AdminSubmissionRow["student"]).user_id,
+        p as AdminSubmissionRow["student"],
+      ]),
+    );
+  }
+
   return (data ?? []).map((row) => {
     const r = row as SubmissionRow & {
       exercise: (ExerciseRow & { modules: { id: string; slug: string; title: string; week_number: number } | null }) | null;
-      student: AdminSubmissionRow["student"] | null;
       feedback: FeedbackRow[] | FeedbackRow | null;
     };
     const fb = Array.isArray(r.feedback) ? r.feedback[0] : r.feedback;
     return {
       ...submissionFromRow(r),
       exercise: r.exercise ? exerciseFromRow(r.exercise) : ({} as Exercise),
-      student: r.student ?? ({} as AdminSubmissionRow["student"]),
+      student: studentsByUserId.get(r.user_id) ?? ({} as AdminSubmissionRow["student"]),
       feedback: fb ? (fb as Feedback) : null,
       module_title: r.exercise?.modules?.title ?? "",
     };
@@ -537,9 +554,6 @@ export async function getAdminSubmissionById(
          id, module_id, title, prompt, type, "order",
          modules ( id, slug, title, week_number )
        ),
-       student:profiles!submissions_user_id_fkey (
-         user_id, email, first_name, last_name, tier, current_week
-       ),
        feedback ( * )`,
     )
     .eq("id", id)
@@ -548,14 +562,22 @@ export async function getAdminSubmissionById(
   if (!data) return null;
   const r = data as SubmissionRow & {
     exercise: (ExerciseRow & { modules: { id: string; slug: string; title: string; week_number: number } | null }) | null;
-    student: AdminSubmissionRow["student"] | null;
     feedback: FeedbackRow[] | FeedbackRow | null;
   };
+
+  // Separate query for the student profile (see note in listSubmissionsForAdmin).
+  const { data: studentRow, error: profErr } = await supabase
+    .from("profiles")
+    .select("user_id, email, first_name, last_name, tier, current_week")
+    .eq("user_id", r.user_id)
+    .maybeSingle();
+  if (profErr) throw profErr;
+
   const fb = Array.isArray(r.feedback) ? r.feedback[0] : r.feedback;
   return {
     ...submissionFromRow(r),
     exercise: r.exercise ? exerciseFromRow(r.exercise) : ({} as Exercise),
-    student: r.student ?? ({} as AdminSubmissionRow["student"]),
+    student: (studentRow as AdminSubmissionRow["student"]) ?? ({} as AdminSubmissionRow["student"]),
     feedback: fb ? (fb as Feedback) : null,
     module_title: r.exercise?.modules?.title ?? "",
   };
