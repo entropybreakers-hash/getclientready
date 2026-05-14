@@ -748,8 +748,18 @@
         </div>
 
         <div class="reveal d1 order-1 md:order-2">
-          <div class="aspect-square w-full max-w-md mx-auto rounded-sm overflow-hidden">
-            <img src="assets/bettina-about.jpg" alt="Bettina Baranyi portrait" class="w-full h-full object-cover" loading="lazy" />
+          <div class="relative w-full max-w-lg mx-auto">
+            <!-- Soft accent glow behind the photo for the highlight -->
+            <div aria-hidden="true" class="absolute -inset-8 md:-inset-12 -z-10 opacity-70 pointer-events-none"
+                 style="background: radial-gradient(ellipse 65% 65% at 35% 30%, rgba(201,168,118,0.22), transparent 70%);"></div>
+            <div class="relative aspect-square w-full">
+              <img src="assets/bettina-about.jpg" alt="Bettina Baranyi portrait"
+                   class="w-full h-full object-cover object-center"
+                   loading="lazy"
+                   style="filter: brightness(0.92) contrast(1.02);
+                          -webkit-mask-image: radial-gradient(ellipse 80% 90% at 50% 50%, #000 60%, rgba(0,0,0,0.55) 82%, transparent 100%);
+                          mask-image: radial-gradient(ellipse 80% 90% at 50% 50%, #000 60%, rgba(0,0,0,0.55) 82%, transparent 100%);" />
+            </div>
           </div>
         </div>
       </div>
