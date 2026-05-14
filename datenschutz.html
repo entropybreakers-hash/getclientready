@@ -58,6 +58,9 @@
         <ul class="mt-3 space-y-2">
           <li>Daten, die Sie bei einer Anfrage über die Kalender-Buchung (z. B. Google Calendar / Calendly) angeben — Name, E-Mail, ggf. Telefonnummer, gebuchter Termin und Anlass.</li>
           <li>Daten, die Sie per E-Mail übermitteln — Name, E-Mail-Adresse, Inhalt der Nachricht.</li>
+          <li><strong>Selbst-Assessment-Quiz auf der Startseite:</strong> ausschließlich <em>anonymisierte</em> Ergebnisdaten (erkanntes Kommunikations-Muster, Kontext-Tags, gewähltes Stakes-Level, Zeitstempel). Es werden weder Name noch E-Mail-Adresse erhoben oder gespeichert.</li>
+          <li><strong>Daten auf der Lernplattform</strong> (app.entropybreakers.com): E-Mail-Adresse, Name, Antworten auf die Übungen, Audio-Aufnahmen (sofern hochgeladen) sowie KI-gestützte und durch Bettina Baranyi finalisierte Feedback-Texte. Die Plattform-Nutzung erfolgt nur nach aktiver Registrierung im Rahmen eines gebuchten Coaching-Pakets.</li>
+          <li><strong>Bei einer kostenpflichtigen Buchung:</strong> Vor- und Nachname, E-Mail, Rechnungsanschrift sowie Zahlungsinformationen — Letztere werden ausschließlich durch unseren Zahlungsdienstleister Stripe verarbeitet (siehe Punkt 6).</li>
           <li>Server-Logfiles, die beim Aufruf der Website automatisch erstellt werden (IP-Adresse, Zeitstempel, User-Agent, aufgerufene URL) — zur Sicherheit und Stabilität des Webhostings.</li>
         </ul>
       </section>
@@ -93,12 +96,17 @@
       </section>
 
       <section>
-        <h2 class="font-serif text-2xl mb-3">6. Empfänger / Datenweitergabe</h2>
+        <h2 class="font-serif text-2xl mb-3">6. Empfänger / Datenweitergabe (Auftragsverarbeiter)</h2>
         <p>
-          Wir geben Ihre Daten nicht an Dritte weiter, außer:
+          Wir geben Ihre Daten nicht an Dritte weiter, außer an die folgenden Auftragsverarbeiter — jeweils auf Grundlage abgeschlossener Auftragsverarbeitungsverträge (Art. 28 DSGVO) bzw. EU-Standardvertragsklauseln, sofern eine Datenübermittlung in Drittländer erfolgt:
         </p>
         <ul class="mt-3 space-y-2">
-          <li>An Auftragsverarbeiter (z. B. Hosting-Anbieter, Google Workspace / Google Calendar) — auf Grundlage entsprechender Auftragsverarbeitungsverträge.</li>
+          <li><strong>Vercel Inc.</strong> (340 S Lemon Ave #4133, Walnut, CA 91789, USA) — Hosting der Lernplattform und der Landing-Page. Datenübermittlung in die USA auf Grundlage von EU-Standardvertragsklauseln.</li>
+          <li><strong>Supabase Inc.</strong> (970 Toa Payoh North #07-04, Singapur) — Datenbank-Hosting (EU-Region) für Konto- und Übungsdaten der Lernplattform.</li>
+          <li><strong>Stripe Payments Europe Ltd.</strong> (1 Grand Canal Street Lower, Dublin 2, Irland) — Abwicklung von Zahlungen. Stripe ist eigenverantwortlicher Verarbeiter im Sinne der DSGVO; es gelten die <a href="https://stripe.com/de/privacy" target="_blank" rel="noopener">Datenschutzbestimmungen von Stripe</a>.</li>
+          <li><strong>Resend Inc.</strong> (2261 Market Street #5039, San Francisco, CA 94114, USA) — Versand transaktionaler E-Mails (z. B. „Feedback bereit"-Benachrichtigungen, Willkommens-Nachrichten). Datenübermittlung in die USA auf Grundlage von EU-Standardvertragsklauseln.</li>
+          <li><strong>Anthropic PBC</strong> (548 Market Street PMB 90375, San Francisco, CA 94104, USA) — KI-gestützte Erstellung von Feedback-Entwürfen (Claude API). Übungs-Antworten werden zur Generierung eines Entwurfs übermittelt; die finale Freigabe erfolgt stets manuell durch Bettina Baranyi. Anthropic verwendet API-Inhalte nicht zum Modell-Training. Siehe Punkt 11.</li>
+          <li><strong>Google Ireland Limited</strong> (Gordon House, Barrow Street, Dublin 4, Irland) — Google Calendar (Termin-Buchung) und Google Fonts.</li>
           <li>An Steuerberater und Behörden, soweit gesetzlich vorgeschrieben.</li>
         </ul>
       </section>
@@ -141,6 +149,13 @@
           Sie haben das Recht, sich bei der österreichischen Datenschutzbehörde zu beschweren:<br>
           Österreichische Datenschutzbehörde, Barichgasse 40–42, 1030 Wien —
           <a href="https://www.dsb.gv.at" target="_blank" rel="noopener">www.dsb.gv.at</a>.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-serif text-2xl mb-3">11. KI-gestützte Verarbeitung</h2>
+        <p>
+          Im Rahmen der Lernplattform werden Ihre Übungs-Antworten zur Erstellung eines ersten Feedback-Entwurfs an die Claude-API von Anthropic PBC übermittelt. Die <strong>finale Feedback-Version wird stets manuell durch Bettina Baranyi überprüft und freigegeben</strong>, bevor sie Ihnen zugänglich gemacht wird. Anthropic verwendet API-Inhalte gemäß den Anbieter-Bestimmungen nicht zum Training seiner Modelle. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (Vertragserfüllung). Sie können dieser KI-gestützten Verarbeitung jederzeit widersprechen; in diesem Fall erfolgt das Feedback rein manuell ohne KI-Entwurf.
         </p>
       </section>
 
