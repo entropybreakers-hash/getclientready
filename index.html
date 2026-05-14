@@ -391,7 +391,7 @@
       </div>
 
       <p class="mt-6 text-center text-xs text-ink-muted">
-        Your answers stay on this page. Nothing is sent anywhere until you book a call.
+        No email, no name, no contact details. We log only the anonymous pattern result so we can learn what's most common in the DACH market.
       </p>
     </div>
   </section>
@@ -1196,6 +1196,39 @@
     (function() {
       const CAL_URL = 'https://calendar.app.google/PJ9sLJ3ed8dXyj1B8';
 
+      // Anonymous quiz-result POST to Supabase. No email, no name, no IP —
+      // only the answer set + identified pattern, so Bettina can see which
+      // patterns dominate her DACH market. Fire-and-forget.
+      const SUPABASE_URL = 'https://zqjvwddbfedtnsqpjomk.supabase.co';
+      const SUPABASE_ANON = 'sb_publishable_thyK7DeLQTi7kMASM2QxaQ_zDb_b_zj';
+
+      function saveQuizResult(breakdownKey) {
+        try {
+          fetch(`${SUPABASE_URL}/rest/v1/quiz_results`, {
+            method: 'POST',
+            headers: {
+              'apikey': SUPABASE_ANON,
+              'Authorization': `Bearer ${SUPABASE_ANON}`,
+              'Content-Type': 'application/json',
+              'Prefer': 'return=minimal',
+            },
+            body: JSON.stringify({
+              breakdown:    breakdownKey,
+              where_freeze: answers.where,
+              cost:         answers.cost,
+              silent:       answers.silent,
+              tried:        Array.isArray(answers.tried) ? answers.tried : [],
+              frequency:    answers.frequency,
+              goal:         answers.goal,
+              firstmove:    answers.firstmove,
+              identity:     answers.identity,
+              user_agent:   (navigator.userAgent || '').slice(0, 200),
+            }),
+            keepalive: true,
+          }).catch(() => {});
+        } catch (e) { /* never break the UX */ }
+      }
+
       const steps = [
         {
           id: 'where', type: 'single',
@@ -1385,6 +1418,11 @@
       function showResult() {
         const key = answers.breakdown || 'lag';
         const r = results[key];
+
+        // Save anonymous quiz result to Supabase (no email, no name, no IP).
+        // Fire-and-forget — failures don't affect the UX.
+        saveQuizResult(key);
+
         elProgressWrap.classList.add('hidden');
         elNav.classList.add('hidden');
         elContent.classList.add('hidden');
