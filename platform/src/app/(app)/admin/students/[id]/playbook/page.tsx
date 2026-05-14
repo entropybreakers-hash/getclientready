@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/Badge";
 import { getStudentById, getStudentPlaybook } from "@/lib/data";
 import { formatDate } from "@/lib/utils";
 import { PlaybookUploadForm } from "./PlaybookUploadForm";
+import { AIPlaybookDraft } from "./AIPlaybookDraft";
 
 export const dynamic = "force-dynamic";
 
@@ -75,12 +76,14 @@ export default async function AdminPlaybookPage({
         />
       </div>
 
-      <p className="mt-6 text-xs text-ink-muted leading-relaxed">
+      <p className="mt-6 mb-10 text-xs text-ink-muted leading-relaxed">
         The student sees the playbook on their <span className="text-ink-light">/playbook</span> page
         with a download link. Files go to the private <span className="text-ink-light">playbooks</span>{" "}
         Supabase Storage bucket; the URL stored here is a signed, time-limited link generated on
         upload.
       </p>
+
+      <AIPlaybookDraft userId={id} />
     </div>
   );
 }

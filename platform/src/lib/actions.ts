@@ -3,8 +3,17 @@
 import { revalidatePath } from "next/cache";
 import { USE_MOCK } from "./env";
 import { getServerClient } from "./supabase/server";
-import { generateFeedbackDraft, generatePatternReportDraft } from "./ai-feedback";
-import { getAdminSubmissionById, listSubmissionsForAdmin, getStudentById } from "./data";
+import {
+  generateFeedbackDraft,
+  generatePatternReportDraft,
+  generatePlaybookDraft,
+} from "./ai-feedback";
+import {
+  getAdminSubmissionById,
+  getStudentPatternReports,
+  listSubmissionsForAdmin,
+  getStudentById,
+} from "./data";
 
 async function requireAdmin() {
   const supabase = await getServerClient();
@@ -387,6 +396,79 @@ export async function savePlaybookAction(
   revalidatePath(`/admin/students/${input.userId}`);
   revalidatePath("/playbook");
   return { ok: true };
+}
+
+interface PlaybookDraftResult extends ActionResult {
+  draft?: { content: string; patterns: string[] };
+}
+
+export async function generatePlaybookDraftAction(
+  userId: string,
+): Promise<PlaybookDraftResult> {
+  if (USE_MOCK) {
+    await new Promise((r) => setTimeout(r, 2500));
+    return {
+      ok: true,
+      draft: {
+        content: `*[Mock draft]*\n\n*The arc you just completed.*\n\n## 1. Your Pattern Signature\n\n[Mock draft] In live mode this will be a real Claude-generated playbook drawn from all six weeks of the student's submissions and feedback. Each of the seven sections is filled with their actual words and your actual coaching.\n\n## 2. Your Trap Replacements\n\n| Trap | Your replacement | Where you nailed it |\n|---|---|---|\n| — | — | — |\n\n## 3. Your Authority Rewrites\n\n— mock —\n\n## 4. Your Pressure Frameworks\n\n— mock —\n\n## 5. Your Command Library\n\n— mock —\n\n## 6. Your Signature Frameworks\n\n— mock —\n\n## 7. Your Next 90 Days\n\nSet \`ANTHROPIC_API_KEY\` in Vercel and switch off mock mode to generate a real playbook.`,
+        patterns: ["translation lag", "hedging", "framework integration"],
+      },
+    };
+  }
+
+  const auth = await requireAdmin();
+  if (!auth.ok) return { ok: false, error: auth.error };
+
+  const student = await getStudentById(userId);
+  if (!student) return { ok: false, error: "Student not found." };
+
+  const [allSubs, patternReports] = await Promise.all([
+    listSubmissionsForAdmin({ status: "all", limit: 200 }),
+    getStudentPatternReports(userId),
+  ]);
+  const studentSubs = allSubs
+    .filter((s) => s.user_id === userId)
+    .sort(
+      (a, b) =>
+        a.exercise.week_number - b.exercise.week_number ||
+        a.exercise.order - b.exercise.order,
+    );
+
+  if (studentSubs.length === 0) {
+    return { ok: false, error: "No submissions yet for this student." };
+  }
+
+  const week1Report =
+    patternReports.find((r) => r.type === "diagnostic_week1")?.content ?? null;
+
+  try {
+    const draft = await generatePlaybookDraft({
+      studentFirstName: student.first_name || student.email,
+      startedAt: student.started_at,
+      week1PatternReport: week1Report,
+      submissions: studentSubs.map((s) => ({
+        weekNumber: s.exercise.week_number,
+        exerciseTitle: s.exercise.title,
+        prompt: s.exercise.prompt,
+        studentContent: s.audio_url
+          ? `[Audio submission] ${s.content}`
+          : s.content,
+        feedback: s.feedback?.content ?? null,
+      })),
+    });
+    return {
+      ok: true,
+      draft: {
+        content: draft.content,
+        patterns: draft.patterns_resolved,
+      },
+    };
+  } catch (err) {
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : "AI draft failed.",
+    };
+  }
 }
 
 // ─── Student profile update (current week, status) ──────────────────────────
