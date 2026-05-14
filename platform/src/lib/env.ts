@@ -34,3 +34,8 @@ export const RESEND_API_KEY = process.env.RESEND_API_KEY ?? "";
 // in Resend (https://resend.com/domains). Falls back to onboarding sandbox.
 export const EMAIL_FROM =
   process.env.EMAIL_FROM ?? "Bettina @ Get Client Ready <bettina@entropybreakers.com>";
+
+// Plausible Analytics domain. When unset, no analytics script is loaded
+// (zero third-party requests). To activate: register the domain in the
+// Plausible dashboard and set this env var to the same value.
+export const PLAUSIBLE_DOMAIN = process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN ?? "";
