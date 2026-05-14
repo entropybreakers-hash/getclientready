@@ -39,3 +39,28 @@ export const EMAIL_FROM =
 // (zero third-party requests). To activate: register the domain in the
 // Plausible dashboard and set this env var to the same value.
 export const PLAUSIBLE_DOMAIN = process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN ?? "";
+
+// Supabase service-role key — bypasses RLS. Used only by the Stripe
+// webhook to provision new accounts. NEVER expose to the client.
+export const SUPABASE_SERVICE_ROLE_KEY =
+  process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
+
+// Stripe — server-only credentials for the checkout webhook.
+export const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY ?? "";
+export const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET ?? "";
+
+// Map Stripe Price IDs to internal tier strings.
+// Find each Price ID in Stripe Dashboard → Products → click product →
+// Pricing section → copy "price_..." id (NOT the product id).
+export const STRIPE_PRICE_TO_TIER: Record<string, "sprint" | "shift" | "reframe"> =
+  Object.fromEntries(
+    (
+      [
+        [process.env.STRIPE_PRICE_SPRINT, "sprint"],
+        [process.env.STRIPE_PRICE_SHIFT, "shift"],
+        [process.env.STRIPE_PRICE_REFRAME, "reframe"],
+      ] as const
+    ).filter((pair): pair is [string, "sprint" | "shift" | "reframe"] =>
+      Boolean(pair[0]),
+    ),
+  );
