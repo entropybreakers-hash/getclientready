@@ -18,9 +18,11 @@
 
 ---
 
-## 1. New paying student — onboarding (10 minutes)
+## 1. New paying student — onboarding
 
-Run this checklist top-to-bottom every time you onboard someone.
+**If the Stripe webhook is configured (see section 11):** onboarding is fully automated. When Stripe fires `checkout.session.completed`, the platform invites the student, sets their tier, and sends the welcome email. Nothing for you to do.
+
+**If the webhook is NOT configured yet:** run the manual checklist below (10 minutes).
 
 ### a. Confirm payment
 - Stripe Dashboard → Payments → check the new payment landed
@@ -201,7 +203,7 @@ Most likely: `ANTHROPIC_API_KEY` env var is unset or invalid.
 |---|---|---|
 | Email when feedback arrives | Student gets nothing automatic | Phase: Resend integration |
 | Email when student submits | You get nothing automatic | Phase: Resend integration |
-| Stripe → auto-create user | Manual (you create in Supabase Auth) | Phase: Stripe webhook |
+| Stripe → auto-create user | Automatic once webhook configured (see §11). Manual fallback below. | Done |
 | Audio transcription | Audio plays back; you listen | Phase: Whisper API |
 | Playbook PDF generation | You convert markdown → PDF manually | Phase: in-platform PDF |
 
@@ -215,4 +217,63 @@ Most likely: `ANTHROPIC_API_KEY` env var is unset or invalid.
 - [ ] AI draft works on pattern report
 - [ ] AI draft works on playbook
 - [ ] Reset password email arrives with your brand
+
+---
+
+## 11. Stripe webhook setup (one-time, ~10 minutes)
+
+This is what makes "pay on Stripe → user account appears automatically" work. Once configured you never touch §1 again.
+
+### Prerequisites
+- Stripe account in **Live mode** with the 3 Payment Links created (Sprint / Shift / Reframe).
+- Supabase service-role key.
+
+### Step 1 — Collect Stripe Price IDs
+For each of the 3 Payment Links: Stripe Dashboard → **Products** → click the product → **Pricing** section → copy the `price_...` id (NOT the `prod_...`).
+
+You'll have three IDs like `price_1Q...` — one per tier.
+
+### Step 2 — Add the webhook endpoint
+1. Stripe Dashboard → **Developers → Webhooks → + Add endpoint**
+2. **Endpoint URL:** `https://app.entropybreakers.com/api/stripe/webhook`
+3. **Events to send:** select only `checkout.session.completed`
+4. Click **Add endpoint**
+5. On the created endpoint's page, click **"Reveal signing secret"** → copy the `whsec_...` value
+
+### Step 3 — Set env vars in Vercel
+Vercel → getclientready project → Settings → Environment Variables → Production. Add:
+
+| Name | Value |
+|---|---|
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase → Project Settings → API → service_role key |
+| `STRIPE_SECRET_KEY` | Stripe → Developers → API keys → "Secret key" (`sk_live_...`) |
+| `STRIPE_WEBHOOK_SECRET` | The `whsec_...` from step 2 |
+| `STRIPE_PRICE_SPRINT` | The Sprint `price_...` from step 1 |
+| `STRIPE_PRICE_SHIFT` | The Shift `price_...` from step 1 |
+| `STRIPE_PRICE_REFRAME` | The Reframe `price_...` from step 1 |
+
+Redeploy (no cache).
+
+### Step 4 — Test
+1. Stripe Dashboard → Developers → Webhooks → your endpoint → **Send test webhook**
+2. Pick `checkout.session.completed` → **Send test webhook**
+3. Vercel → Logs → confirm a 200 response. Look for `[stripe-webhook]` errors.
+4. **Best real test:** do a €0.50 test purchase from one of your Payment Links with your own email. A welcome email should arrive ~30s later; check Supabase → Auth → Users for the new entry.
+
+### How it works
+1. Customer pays via your Payment Link
+2. Stripe calls `/api/stripe/webhook` with the session event
+3. Endpoint verifies the signature, finds the price ID, maps to tier
+4. Supabase Admin invites the email → auth.users row → `handle_new_user` trigger creates the profile
+5. Endpoint updates `profiles.tier` to match what they paid for
+6. Welcome email goes out via Resend
+7. Customer clicks the invite link, sets a password, lands on the platform
+
+### Troubleshooting
+| Symptom | Likely cause |
+|---|---|
+| 400 "Signature verification failed" | `STRIPE_WEBHOOK_SECRET` wrong or stale (different across test/live). |
+| 200 with `"ignored":"unknown_price"` | A `STRIPE_PRICE_*` env var is missing or doesn't match the actual price ID. |
+| User created in Auth but tier stays `sprint` | Webhook ran before `STRIPE_PRICE_*` was set. Fix the env, then update by hand. |
+| No welcome email | Resend not configured (see §1 prereqs) — the user is still created, you just send the welcome manually. |
 - [ ] Mobile responsive at 375px viewport
