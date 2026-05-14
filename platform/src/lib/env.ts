@@ -28,3 +28,9 @@ export const PLATFORM_URL =
 // Server-only — must NOT be NEXT_PUBLIC_ (would leak to client bundle).
 // Only read inside server actions / server components.
 export const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY ?? "";
+export const RESEND_API_KEY = process.env.RESEND_API_KEY ?? "";
+
+// Sender address for transactional email. Must be on a domain verified
+// in Resend (https://resend.com/domains). Falls back to onboarding sandbox.
+export const EMAIL_FROM =
+  process.env.EMAIL_FROM ?? "Bettina @ Get Client Ready <bettina@entropybreakers.com>";

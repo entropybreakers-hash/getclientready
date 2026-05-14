@@ -14,6 +14,7 @@ import {
   listSubmissionsForAdmin,
   getStudentById,
 } from "./data";
+import { sendFeedbackReadyEmail, sendWelcomeEmail } from "./email";
 
 async function requireAdmin() {
   const supabase = await getServerClient();
@@ -85,6 +86,7 @@ export async function submitFeedbackAction(
     .eq("submission_id", submissionId)
     .maybeSingle();
 
+  const isNewFeedback = !existing;
   if (existing) {
     const { error } = await supabase
       .from("feedback")
@@ -102,6 +104,22 @@ export async function submitFeedbackAction(
     });
     if (error) return { ok: false, error: error.message };
     // The on_feedback_inserted trigger flips submission status to feedback_ready.
+  }
+
+  // Notify the student via email — only on NEW feedback, not on edits, so
+  // re-saving doesn't spam them. Soft-fail: never break the Save button.
+  if (isNewFeedback) {
+    const submission = await getAdminSubmissionById(submissionId);
+    if (submission?.student?.email) {
+      await sendFeedbackReadyEmail({
+        to: submission.student.email,
+        studentFirstName:
+          submission.student.first_name || submission.student.email,
+        exerciseTitle: submission.exercise.title,
+        weekNumber: submission.exercise.week_number,
+        submissionId,
+      }).catch(() => undefined);
+    }
   }
 
   // After feedback lands, check whether the student has now received feedback
@@ -469,6 +487,44 @@ export async function generatePlaybookDraftAction(
       error: err instanceof Error ? err.message : "AI draft failed.",
     };
   }
+}
+
+// ─── Welcome email ──────────────────────────────────────────────────────────
+
+interface SendWelcomeEmailInput {
+  userId: string;
+  tempPassword?: string;
+}
+
+export async function sendWelcomeEmailAction(
+  input: SendWelcomeEmailInput,
+): Promise<ActionResult> {
+  if (USE_MOCK) {
+    await new Promise((r) => setTimeout(r, 500));
+    return { ok: true };
+  }
+
+  const auth = await requireAdmin();
+  if (!auth.ok) return { ok: false, error: auth.error };
+
+  const student = await getStudentById(input.userId);
+  if (!student) return { ok: false, error: "Student not found." };
+
+  const res = await sendWelcomeEmail({
+    to: student.email,
+    studentFirstName: student.first_name || student.email.split("@")[0],
+    tempPassword: input.tempPassword?.trim() || null,
+  });
+
+  if (res.skipped) {
+    return {
+      ok: false,
+      error:
+        "RESEND_API_KEY not set in Vercel env vars. Add it to send transactional email.",
+    };
+  }
+  if (!res.ok) return { ok: false, error: res.error ?? "Send failed." };
+  return { ok: true };
 }
 
 // ─── Student profile update (current week, status) ──────────────────────────
