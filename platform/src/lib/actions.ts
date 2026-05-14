@@ -95,10 +95,78 @@ export async function submitFeedbackAction(
     // The on_feedback_inserted trigger flips submission status to feedback_ready.
   }
 
+  // After feedback lands, check whether the student has now received feedback
+  // on every exercise in the corresponding week. If so AND that week matches
+  // their current_week, bump current_week to the next one. Capped at 6.
+  await maybeAdvanceStudentWeek(supabase, submissionId);
+
   revalidatePath(`/admin/submissions/${submissionId}`);
   revalidatePath("/admin/submissions");
   revalidatePath("/dashboard");
   return { ok: true };
+}
+
+async function maybeAdvanceStudentWeek(
+  supabase: Awaited<ReturnType<typeof getServerClient>>,
+  submissionId: string,
+): Promise<void> {
+  // Look up the submission's student + which week its exercise belongs to.
+  const { data: subData } = await supabase
+    .from("submissions")
+    .select("user_id, exercise:exercises ( module:modules ( week_number ) )")
+    .eq("id", submissionId)
+    .maybeSingle();
+  const sub = subData as
+    | {
+        user_id: string;
+        exercise: { module: { week_number: number } | null } | null;
+      }
+    | null;
+  if (!sub?.exercise?.module) return;
+  const weekNumber = sub.exercise.module.week_number;
+  const userId = sub.user_id;
+
+  // Only act when this submission's week IS the student's current_week.
+  const { data: profileRow } = await supabase
+    .from("profiles")
+    .select("current_week")
+    .eq("user_id", userId)
+    .maybeSingle();
+  const currentWeek = (profileRow as { current_week: number } | null)?.current_week;
+  if (!currentWeek || currentWeek !== weekNumber || currentWeek >= 6) return;
+
+  // All exercises for this week.
+  const { data: weekExercises } = await supabase
+    .from("exercises")
+    .select("id, module:modules!inner ( week_number )")
+    .eq("modules.week_number", weekNumber);
+  const exerciseIds = (
+    (weekExercises ?? []) as Array<{ id: string }>
+  ).map((e) => e.id);
+  if (exerciseIds.length === 0) return;
+
+  // All this student's feedback_ready submissions in this week.
+  const { data: readySubs } = await supabase
+    .from("submissions")
+    .select("exercise_id")
+    .eq("user_id", userId)
+    .eq("status", "feedback_ready")
+    .in("exercise_id", exerciseIds);
+  const coveredExerciseIds = new Set(
+    ((readySubs ?? []) as Array<{ exercise_id: string }>).map(
+      (s) => s.exercise_id,
+    ),
+  );
+  const allCovered = exerciseIds.every((id) => coveredExerciseIds.has(id));
+  if (!allCovered) return;
+
+  // Advance.
+  await supabase
+    .from("profiles")
+    .update({ current_week: currentWeek + 1 })
+    .eq("user_id", userId);
+  revalidatePath("/dashboard");
+  revalidatePath(`/admin/students/${userId}`);
 }
 
 // ─── AI feedback draft ──────────────────────────────────────────────────────

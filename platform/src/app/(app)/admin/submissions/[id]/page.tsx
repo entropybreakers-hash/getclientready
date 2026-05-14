@@ -22,20 +22,23 @@ export default async function AdminSubmissionDetailPage({
 
   return (
     <div className="max-w-7xl mx-auto px-5 md:px-8 py-10 md:py-14">
-      <nav className="text-xs tracking-[0.18em] uppercase text-ink-muted mb-6">
+      <nav className="text-xs tracking-[0.18em] uppercase text-ink-muted mb-6 flex flex-wrap gap-x-1 gap-y-1">
         <Link href="/admin" className="hover:text-accent">
           Admin
-        </Link>{" "}
-        /{" "}
+        </Link>
+        <span>/</span>
         <Link href="/admin/submissions" className="hover:text-accent">
           Submissions
-        </Link>{" "}
-        / Week {s.exercise.week_number} · {s.exercise.title}
+        </Link>
+        <span>/</span>
+        <span className="truncate max-w-full">
+          Week {s.exercise.week_number} · {s.exercise.title}
+        </span>
       </nav>
 
       <header className="mb-8 flex items-start justify-between flex-wrap gap-4">
-        <div>
-          <div className="eyebrow mb-2">
+        <div className="min-w-0 max-w-full">
+          <div className="eyebrow mb-2 break-words">
             {studentName} · {s.student.email}
           </div>
           <h1 className="font-serif text-3xl md:text-4xl font-medium leading-tight">
