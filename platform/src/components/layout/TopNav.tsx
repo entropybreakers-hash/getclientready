@@ -74,12 +74,14 @@ export function TopNav({ profile, welcome }: TopNavProps) {
               </div>
               <Link
                 href="/profile"
+                onClick={() => setOpen(false)}
                 className="block px-3 py-2 text-sm hover:bg-white/5 rounded-sm"
               >
                 Profile
               </Link>
               <Link
                 href="/submissions"
+                onClick={() => setOpen(false)}
                 className="block px-3 py-2 text-sm hover:bg-white/5 rounded-sm md:hidden"
               >
                 My submissions
@@ -88,6 +90,7 @@ export function TopNav({ profile, welcome }: TopNavProps) {
                 <Link
                   key={item.href}
                   href={item.href}
+                  onClick={() => setOpen(false)}
                   className="block px-3 py-2 text-sm hover:bg-white/5 rounded-sm md:hidden"
                 >
                   {item.label}
@@ -96,6 +99,7 @@ export function TopNav({ profile, welcome }: TopNavProps) {
               {profile.is_admin && (
                 <Link
                   href="/admin"
+                  onClick={() => setOpen(false)}
                   className="block px-3 py-2 text-sm text-accent hover:bg-white/5 rounded-sm"
                 >
                   Admin
