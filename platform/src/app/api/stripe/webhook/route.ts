@@ -14,6 +14,8 @@
 // Idempotency: Stripe retries delivery on non-2xx. A duplicate delivery for
 // an already-provisioned buyer is treated as success (no password reset).
 
+import { randomBytes } from "node:crypto";
+
 import type { NextRequest } from "next/server";
 import type Stripe from "stripe";
 
@@ -30,9 +32,11 @@ export const dynamic = "force-dynamic";
 
 // Random temporary password for the buyer's first login. Excludes
 // visually ambiguous characters so it survives being typed by hand.
+// Uses node:crypto so it does not depend on a global `crypto` (absent
+// on Node 18, which would crash the handler).
 function generateTempPassword(): string {
   const alphabet = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
-  const bytes = crypto.getRandomValues(new Uint8Array(14));
+  const bytes = randomBytes(14);
   return Array.from(bytes, (b) => alphabet[b % alphabet.length]).join("");
 }
 
