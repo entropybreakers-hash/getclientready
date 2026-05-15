@@ -20,7 +20,7 @@ import {
   STRIPE_PRICE_TO_TIER,
   STRIPE_WEBHOOK_SECRET,
 } from "@/lib/env";
-import { sendWelcomeEmail } from "@/lib/email";
+import { sendAdminAlert, sendWelcomeEmail } from "@/lib/email";
 import { getStripe } from "@/lib/stripe";
 import { getAdminClient } from "@/lib/supabase/admin";
 
@@ -76,12 +76,24 @@ export async function POST(request: NextRequest) {
 
   const tier = STRIPE_PRICE_TO_TIER[priceId];
   if (!tier) {
-    // Unknown price — likely env vars not configured. Still 200 so Stripe
-    // doesn't retry forever, but log so it surfaces in Vercel logs.
+    // Unknown price — almost always a missing/wrong STRIPE_PRICE_* env var.
+    // Fail loud: a 500 keeps the event in Stripe's retry queue and shows it
+    // as failed in the dashboard, instead of silently dropping a paid order.
     console.error(
       `[stripe-webhook] Unknown priceId ${priceId} for session ${session.id}.`,
     );
-    return Response.json({ received: true, ignored: "unknown_price" });
+    await sendAdminAlert(
+      "[Get Client Ready] Action needed: unrecognised Stripe price",
+      {
+        heading: "A paid order could not be provisioned.",
+        lines: [
+          `<strong>${email}</strong> completed checkout, but the Stripe price <code>${priceId}</code> is not mapped to any tier.`,
+          "This usually means STRIPE_PRICE_SPRINT / SHIFT / REFRAME is missing or wrong.",
+          "The customer has NOT received an account. Fix the env var, then replay this event from the Stripe dashboard (Developers → Webhooks).",
+        ],
+      },
+    );
+    return new Response(`Unrecognised price ${priceId}.`, { status: 500 });
   }
 
   // Extract name from customer details for friendlier welcome email.
@@ -106,33 +118,53 @@ export async function POST(request: NextRequest) {
   // purchased product. The on_auth_user_created trigger creates the
   // profile row with default tier='sprint'; we overwrite to the real tier.
   const userId = invited?.user?.id;
-  if (userId) {
-    const { error: updateErr } = await admin
-      .from("profiles")
-      .update({ tier })
-      .eq("user_id", userId);
-    if (updateErr) {
-      console.error(
-        `[stripe-webhook] Failed to update tier for ${userId}: ${updateErr.message}`,
-      );
-    }
-  } else {
-    // User already existed — match by email to update their tier.
-    const { error: updateErr } = await admin
-      .from("profiles")
-      .update({ tier })
-      .eq("email", email);
-    if (updateErr) {
-      console.error(
-        `[stripe-webhook] Failed to update tier for ${email}: ${updateErr.message}`,
-      );
-    }
+  const { error: updateErr } = userId
+    ? await admin.from("profiles").update({ tier }).eq("user_id", userId)
+    : // User already existed — match by email to update their tier.
+      await admin.from("profiles").update({ tier }).eq("email", email);
+
+  if (updateErr) {
+    // The customer paid but their profile still shows the default tier.
+    // Alert + 500 so Stripe retries and the failure is visible.
+    console.error(
+      `[stripe-webhook] Failed to set tier=${tier} for ${email}: ${updateErr.message}`,
+    );
+    await sendAdminAlert(
+      "[Get Client Ready] Action needed: tier not applied",
+      {
+        heading: "A paid account is on the wrong tier.",
+        lines: [
+          `<strong>${email}</strong> paid for the <strong>${tier}</strong> tier, but updating their profile failed.`,
+          `Error: <code>${updateErr.message}</code>`,
+          `The account exists but may still show the default tier. Set tier=${tier} in Supabase manually, or replay the event from the Stripe dashboard.`,
+        ],
+      },
+    );
+    return new Response(`Tier update failed: ${updateErr.message}`, {
+      status: 500,
+    });
   }
 
   // Best-effort welcome email. Skipped silently if Resend not configured.
-  await sendWelcomeEmail({
+  const welcome = await sendWelcomeEmail({
     to: email,
     studentFirstName: firstName || "there",
+  });
+
+  // Notify the admin of every paid signup, flagging if the buyer's login
+  // email did not go out (in which case they need a manual follow-up).
+  const welcomeStatus = welcome.ok
+    ? "Welcome email sent."
+    : welcome.skipped
+      ? "Welcome email SKIPPED — Resend is not configured. The customer has no login link yet; contact them manually."
+      : `Welcome email FAILED: ${welcome.error ?? "unknown error"}. The customer has no login link yet; contact them manually.`;
+
+  await sendAdminAlert(`[Get Client Ready] New ${tier} signup: ${email}`, {
+    heading: "New paid signup.",
+    lines: [
+      `<strong>${email}</strong>${fullName ? ` (${fullName})` : ""} purchased the <strong>${tier}</strong> tier.`,
+      welcomeStatus,
+    ],
   });
 
   return Response.json({ received: true, tier, email });

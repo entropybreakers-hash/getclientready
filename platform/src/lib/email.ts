@@ -8,7 +8,7 @@
 import "server-only";
 
 import { Resend } from "resend";
-import { EMAIL_FROM, PLATFORM_URL, RESEND_API_KEY } from "./env";
+import { ADMIN_EMAIL, EMAIL_FROM, PLATFORM_URL, RESEND_API_KEY } from "./env";
 
 interface SendResult {
   ok: boolean;
@@ -187,6 +187,54 @@ export async function sendWelcomeEmail(
       to: input.to,
       subject,
       html: wrap(body, { previewText: "Six weeks. Personalised. Starts now." }),
+    });
+    if (error) return { ok: false, error: error.message };
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "unknown" };
+  }
+}
+
+// ─── admin alert ────────────────────────────────────────────────────────────
+// Internal operational notifications sent to ADMIN_EMAIL: new paid signups
+// and webhook failures that need manual follow-up. Soft-fails like the rest.
+
+interface AdminAlertInput {
+  heading: string;
+  lines: string[];
+}
+
+export async function sendAdminAlert(
+  subject: string,
+  input: AdminAlertInput,
+): Promise<SendResult> {
+  const resend = getResend();
+  if (!resend) return { ok: false, skipped: true };
+
+  const rows = input.lines
+    .map(
+      (line) =>
+        `<tr><td style="padding-bottom:10px;font-size:14px;line-height:1.6;color:rgba(250,250,247,0.85);">${line}</td></tr>`,
+    )
+    .join("");
+
+  const body = `
+    <tr><td style="padding-bottom:24px;">
+      <h1 style="margin:0;font-family:'Cormorant Garamond',Georgia,serif;font-size:28px;font-weight:500;font-style:italic;color:#FAFAF7;text-align:center;line-height:1.2;">
+        ${input.heading}
+      </h1>
+    </td></tr>
+    <tr><td style="padding-bottom:8px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${rows}</table>
+    </td></tr>
+  `;
+
+  try {
+    const { error } = await resend.emails.send({
+      from: EMAIL_FROM,
+      to: ADMIN_EMAIL,
+      subject,
+      html: wrap(body, { previewText: subject }),
     });
     if (error) return { ok: false, error: error.message };
     return { ok: true };
