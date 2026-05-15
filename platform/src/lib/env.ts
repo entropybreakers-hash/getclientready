@@ -56,9 +56,9 @@ export const STRIPE_PRICE_TO_TIER: Record<string, "sprint" | "shift" | "reframe"
   Object.fromEntries(
     (
       [
-        [process.env.STRIPE_PRICE_SPRINT, "sprint"],
-        [process.env.STRIPE_PRICE_SHIFT, "shift"],
-        [process.env.STRIPE_PRICE_REFRAME, "reframe"],
+        [process.env.STRIPE_PRICE_SPRINT?.trim(), "sprint"],
+        [process.env.STRIPE_PRICE_SHIFT?.trim(), "shift"],
+        [process.env.STRIPE_PRICE_REFRAME?.trim(), "reframe"],
       ] as const
     ).filter((pair): pair is [string, "sprint" | "shift" | "reframe"] =>
       Boolean(pair[0]),
