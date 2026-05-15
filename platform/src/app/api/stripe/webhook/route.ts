@@ -92,8 +92,12 @@ export async function POST(request: NextRequest) {
     // Unknown price — almost always a missing/wrong STRIPE_PRICE_* env var.
     // Fail loud: a 500 keeps the event in Stripe's retry queue and shows it
     // as failed in the dashboard, instead of silently dropping a paid order.
+    // The diagnostic line below shows exactly what the env vars resolved to
+    // vs. what Stripe sent — JSON.stringify makes stray whitespace visible.
     console.error(
-      `[stripe-webhook] Unknown priceId ${priceId} for session ${session.id}.`,
+      `[stripe-webhook] Unknown priceId for session ${session.id}. ` +
+        `received=${JSON.stringify(priceId)} ` +
+        `configured=${JSON.stringify(Object.keys(STRIPE_PRICE_TO_TIER))}`,
     );
     await sendAdminAlert(
       "[Get Client Ready] Action needed: unrecognised Stripe price",
