@@ -702,7 +702,7 @@ You are presenting a project timeline to a senior international client. You esti
 
 You believe 5 weeks is unrealistic. You're not willing to compromise quality. But this is an important client.
 
-Write your response. Aim for 4-6 sentences. You may push back, negotiate, or propose alternatives — but **do not hedge or apologize.** Hold the position. Don't over-explain.
+**Record your response — speak it aloud, as if the client were across the table.** Aim for 4-6 sentences (roughly 30-60 seconds). You may push back, negotiate, or propose alternatives — but **do not hedge or apologize.** Hold the position. Don't over-explain.
 
 After submitting, I will respond with:
 - Where your Confidence Behaviors showed up (if any)
@@ -722,7 +722,7 @@ You are in a quarterly review meeting with your leadership team. You've just fin
 
 You haven't prepared for this. You have 10 seconds to think.
 
-Write your response — exactly as you would speak it. Be honest about hesitations, pauses ("um"), restarts. Try using a 2-second pause instead of filler words. Notice what changes.
+**Record your response — speak it aloud, exactly as it would come out in the room.** Don't script it first. Be honest about hesitations, pauses, restarts. Try using a 2-second silent pause instead of filler words. Notice what changes.
 
 After submitting, I'll show you where the response leaks authority — and how to handle the *pause itself* with command.$p$
 where module_id = (select id from public.modules where slug = 'pressure-test')
@@ -734,7 +734,7 @@ update public.exercises set
 
 You strongly disagree with a strategic decision your manager has just announced in a meeting with five other people. You believe the decision will damage long-term outcomes. You don't want to undermine your manager publicly — but staying silent feels wrong.
 
-Write what you would say, in that moment, in English. The challenge: disagree clearly, without diminishing your manager's authority, **in front of the team**.
+**Record what you would say, in that moment, in English — speak it aloud.** The challenge: disagree clearly, without diminishing your manager's authority, **in front of the team**.
 
 Structure to aim for:
 1. Clear disagreement (no hedging)
@@ -890,7 +890,7 @@ where module_id = (select id from public.modules where slug = 'command')
 update public.exercises set
   prompt = $p$You have 5 minutes alone with a senior executive — your manager's manager — before a major decision is made. You believe the proposed direction is wrong. They have 5 minutes to listen to you.
 
-Write the opening 30 seconds of what you would say. (About 4-6 sentences.)
+**Record the opening 30 seconds of what you would say — speak it aloud, as if the executive were in front of you.** (About 4-6 sentences.)
 
 Use the 4-part structure:
 1. Acknowledge what you understand they're optimizing for

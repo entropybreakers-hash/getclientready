@@ -226,6 +226,20 @@ export async function generateFeedbackDraftAction(
     return { ok: false, error: "Submission is missing exercise context." };
   }
 
+  // Claude cannot hear the recording — it only receives a URL it can't open.
+  // For an audio submission with no written notes there is nothing to draft from.
+  const audioWithoutNotes =
+    !!submission.audio_url &&
+    (!submission.content.trim() ||
+      submission.content.trim().startsWith("[Audio submission"));
+  if (audioWithoutNotes) {
+    return {
+      ok: false,
+      error:
+        "This is an audio submission with no written notes — listen to the recording and write the feedback yourself. AI drafting needs text to work from.",
+    };
+  }
+
   try {
     const draft = await generateFeedbackDraft({
       studentFirstName:

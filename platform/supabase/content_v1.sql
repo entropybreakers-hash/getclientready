@@ -395,14 +395,14 @@ You are presenting a project timeline to a senior international client. You esti
 
 You believe 5 weeks is unrealistic. You're not willing to compromise quality. But this is an important client and you want to keep the relationship strong.
 
-Write your response. Aim for **4-6 sentences**. You may push back, negotiate, or propose alternatives — but you must hold a clear position.
+**Record your response — speak it aloud, as if the client were across the table.** Aim for **4-6 sentences** (roughly 30-60 seconds). You may push back, negotiate, or propose alternatives — but you must hold a clear position.
 
 After submitting, I'll respond with:
 
 - Where your Confidence Behaviors showed up (if any)
 - Where your authority held or slipped
 - A native-speaker model response for comparison$p$,
-   'text', 1),
+   'audio', 1),
   ((select id from public.modules where slug = 'pressure-test'),
    'The Unexpected Question',
    $p$# Answer cold, on the spot
@@ -415,10 +415,10 @@ You are in a quarterly review meeting with your leadership team. You've just fin
 
 You haven't prepared for this. You have 10 seconds to think.
 
-Write your response — **exactly as you would speak it**. Be honest about hesitations, pauses ("umm"), restarts. Don't polish it. Let the response capture the real-time mental load.
+**Record your response — speak it aloud, exactly as it would come out in the room.** Don't script it first. Let the recording capture the real-time mental load — hesitations, pauses ("umm"), restarts and all.
 
 After submitting, I'll show you where the response leaks authority — and how to handle the pause itself without losing power.$p$,
-   'text', 2),
+   'audio', 2),
   ((select id from public.modules where slug = 'pressure-test'),
    'The Difficult Disagreement',
    $p$# Disagree clearly — without becoming combative
@@ -427,10 +427,10 @@ After submitting, I'll show you where the response leaks authority — and how t
 
 You strongly disagree with a strategic decision your manager has just announced in a meeting with the team. You're confident your analysis is correct. The decision will cost the company time and money if it goes through.
 
-Write what you would say, in that moment, in English. The challenge: **disagree clearly, without undermining your manager and without being passive about your concern.**
+**Record what you would say, in that moment, in English — speak it aloud.** The challenge: **disagree clearly, without undermining your manager and without being passive about your concern.**
 
 Submit your response. I'll respond with a framework for "respectful disagreement at senior levels" calibrated to your style.$p$,
-   'text', 3)
+   'audio', 3)
 on conflict (module_id, "order") do update set
   title  = excluded.title,
   prompt = excluded.prompt,
@@ -480,7 +480,7 @@ Submit your three redirects.$p$,
 
 You have 5 minutes alone with a senior executive — your manager's manager — before a major decision is finalized. You disagree with the proposed direction. Your manager is supportive of the current plan and you don't want to undermine them.
 
-Write the **opening 30 seconds** of what you would say (about 4-6 sentences).
+**Record the opening 30 seconds of what you would say — speak it aloud, as if the executive were in front of you** (about 4-6 sentences).
 
 Constraints:
 
@@ -490,7 +490,7 @@ Constraints:
 - You must **invite continued conversation** — don't close them off
 
 Submit the opening. I'll respond with a tiered framework for how senior professionals navigate this kind of moment.$p$,
-   'text', 2),
+   'audio', 2),
   ((select id from public.modules where slug = 'command'),
    'The Strong Close',
    $p$# Close cleanly. Every time.
