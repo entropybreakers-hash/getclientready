@@ -88,10 +88,13 @@ create table if not exists public.submissions (
   exercise_id   uuid not null references public.exercises(id) on delete cascade,
   content       text not null default '',
   audio_url     text,
+  transcript    text,
   status        text not null default 'pending_review'
                 check (status in ('pending_review', 'feedback_ready')),
   submitted_at  timestamptz not null default now()
 );
+-- Backfill the transcript column on databases created before it existed.
+alter table public.submissions add column if not exists transcript text;
 create index if not exists submissions_user_idx on public.submissions (user_id, submitted_at desc);
 create index if not exists submissions_status_idx on public.submissions (status);
 

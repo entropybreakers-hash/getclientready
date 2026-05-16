@@ -15,6 +15,7 @@ import {
   getStudentById,
 } from "./data";
 import { sendFeedbackReadyEmail, sendWelcomeEmail } from "./email";
+import { transcribeAudioFromUrl } from "./transcribe";
 
 async function requireAdmin() {
   const supabase = await getServerClient();
@@ -227,17 +228,37 @@ export async function generateFeedbackDraftAction(
   }
 
   // Claude cannot hear the recording — it only receives a URL it can't open.
-  // For an audio submission with no written notes there is nothing to draft from.
-  const audioWithoutNotes =
-    !!submission.audio_url &&
-    (!submission.content.trim() ||
-      submission.content.trim().startsWith("[Audio submission"));
-  if (audioWithoutNotes) {
-    return {
-      ok: false,
-      error:
-        "This is an audio submission with no written notes — listen to the recording and write the feedback yourself. AI drafting needs text to work from.",
-    };
+  // For an audio submission we first transcribe (Whisper), cache the
+  // transcript on the row, and draft feedback from that text.
+  const isAudio = !!submission.audio_url;
+  const writtenNotes =
+    submission.content.trim() &&
+    !submission.content.trim().startsWith("[Audio submission")
+      ? submission.content.trim()
+      : "";
+
+  let draftContent = submission.content;
+
+  if (isAudio) {
+    let transcript = submission.transcript?.trim() ?? "";
+    if (!transcript) {
+      try {
+        transcript = await transcribeAudioFromUrl(submission.audio_url!);
+      } catch (err) {
+        return {
+          ok: false,
+          error: err instanceof Error ? err.message : "Transcription failed.",
+        };
+      }
+      // Cache the transcript so re-drafts and the detail view reuse it.
+      await auth.supabase
+        .from("submissions")
+        .update({ transcript })
+        .eq("id", submissionId);
+    }
+    draftContent = writtenNotes
+      ? `${transcript}\n\n[Student's own notes alongside the recording:]\n${writtenNotes}`
+      : transcript;
   }
 
   try {
@@ -248,7 +269,7 @@ export async function generateFeedbackDraftAction(
       moduleTitle: submission.module_title,
       exerciseTitle: submission.exercise.title,
       exercisePrompt: submission.exercise.prompt,
-      submissionContent: submission.content,
+      submissionContent: draftContent,
       submissionAudioUrl: submission.audio_url ?? null,
     });
     return {

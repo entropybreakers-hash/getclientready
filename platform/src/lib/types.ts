@@ -47,6 +47,7 @@ export interface Submission {
   exercise_id: string;
   content: string;
   audio_url?: string | null;
+  transcript?: string | null;
   submitted_at: string;
   status: SubmissionStatus;
 }
