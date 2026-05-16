@@ -70,9 +70,23 @@ export default async function AdminSubmissionDetailPage({
               <div className="space-y-3">
                 <Badge variant="accent">Audio</Badge>
                 <audio controls src={s.audio_url} className="w-full" />
-                {s.content && (
+                {s.content && !s.content.startsWith("[Audio submission") && (
                   <p className="text-sm text-ink-muted leading-relaxed">
                     {s.content}
+                  </p>
+                )}
+                {s.transcript ? (
+                  <div className="pt-1">
+                    <div className="text-[0.65rem] tracking-[0.22em] uppercase text-ink-muted mb-1">
+                      Transcript
+                    </div>
+                    <p className="text-base text-ink-light/90 whitespace-pre-wrap leading-relaxed">
+                      {s.transcript}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-xs text-ink-muted italic">
+                    No transcript yet — click &quot;AI draft&quot; to transcribe and draft feedback.
                   </p>
                 )}
               </div>

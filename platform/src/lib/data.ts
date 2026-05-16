@@ -86,6 +86,7 @@ interface SubmissionRow {
   exercise_id: string;
   content: string;
   audio_url: string | null;
+  transcript: string | null;
   submitted_at: string;
   status: Submission["status"];
 }
@@ -138,6 +139,7 @@ function submissionFromRow(row: SubmissionRow): Submission {
     exercise_id: row.exercise_id,
     content: row.content,
     audio_url: row.audio_url,
+    transcript: row.transcript ?? null,
     submitted_at: row.submitted_at,
     status: row.status,
   };

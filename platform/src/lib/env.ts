@@ -30,6 +30,10 @@ export const PLATFORM_URL =
 export const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY ?? "";
 export const RESEND_API_KEY = process.env.RESEND_API_KEY ?? "";
 
+// OpenAI key — used only to transcribe audio submissions (Whisper) so the
+// AI feedback draft can work from a transcript. Server-only.
+export const OPENAI_API_KEY = process.env.OPENAI_API_KEY ?? "";
+
 // Sender address for transactional email. Must be on a domain verified
 // in Resend (https://resend.com/domains). Falls back to onboarding sandbox.
 export const EMAIL_FROM =
