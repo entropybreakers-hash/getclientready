@@ -42,6 +42,14 @@ export default async function AppLayout({
             >
               Impressum
             </a>
+            <a
+              href="https://getclientready.entropybreakers.com/agb.html"
+              className="hover:text-accent transition-colors"
+              target="_blank"
+              rel="noopener"
+            >
+              AGB
+            </a>
           </div>
         </div>
       </footer>

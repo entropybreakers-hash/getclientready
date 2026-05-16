@@ -15,8 +15,9 @@ Domain: `getclientready.entropybreakers.com`.
 ```
 /
 ├── index.html         # Main landing page
-├── impressum.html     # Legal — placeholders Bettina must fill before going live
+├── impressum.html     # Legal — Impressum (Austrian disclosure)
 ├── datenschutz.html   # GDPR / DSGVO privacy page
+├── agb.html           # Terms (AGB) + Widerrufsbelehrung — needs lawyer review
 ├── CNAME              # Custom domain pin for GitHub Pages
 ├── assets/
 │   ├── bettina-hero.jpg     # Hero portrait (white bg, arms crossed, profile gaze)
