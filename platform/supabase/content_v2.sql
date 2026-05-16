@@ -117,7 +117,7 @@ You are presenting a project timeline to a senior international client. You esti
 
 You believe 5 weeks is unrealistic. You're not willing to compromise quality. But this is an important client and you want to keep the relationship strong.
 
-Write your response. Aim for **4-6 sentences**. You may push back, negotiate, or propose alternatives — but you must hold a clear position.
+**Record your response — speak it aloud, as if the client were across the table.** Aim for **4-6 sentences** (roughly 30-60 seconds). You may push back, negotiate, or propose alternatives — but you must hold a clear position.
 
 After submitting, I'll respond with:
 
