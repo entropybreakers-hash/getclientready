@@ -51,11 +51,25 @@ export function AudioRecorder({
 
   async function start() {
     setError(null);
+
+    // Tear down any leftover state from a previous take so re-recording
+    // always works, even if the last recording ended in an odd state.
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current = null;
+    if (mediaRecorderRef.current?.state === "recording") {
+      mediaRecorderRef.current.stop();
+    }
+    mediaRecorderRef.current = null;
     if (previewUrl) {
       URL.revokeObjectURL(previewUrl);
       setPreviewUrl(null);
-      onChange(null);
     }
+    onChange(null);
+    setDuration(0);
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -117,13 +131,6 @@ export function AudioRecorder({
       mediaRecorderRef.current.stop();
     }
     setRecording(false);
-  }
-
-  function clear() {
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
-    setPreviewUrl(null);
-    setDuration(0);
-    onChange(null);
   }
 
   if (permissionDenied) {
@@ -189,7 +196,8 @@ export function AudioRecorder({
             {!recording && previewUrl && (
               <Button
                 type="button"
-                onClick={clear}
+                onClick={start}
+                disabled={disabled}
                 size="sm"
                 variant="outline"
               >
