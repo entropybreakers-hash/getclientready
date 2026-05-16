@@ -22,7 +22,16 @@ export function SubmissionForm({
   existing,
 }: SubmissionFormProps) {
   const router = useRouter();
-  const [content, setContent] = useState("");
+  // A submission that is still "pending_review" can be edited and resubmitted
+  // (Bettina has not given feedback yet). "feedback_ready" ones are locked.
+  const isEditing = !!existing && existing.status === "pending_review";
+  const existingNotes =
+    existing &&
+    existing.content &&
+    !existing.content.startsWith("[Audio submission")
+      ? existing.content
+      : "";
+  const [content, setContent] = useState(existingNotes);
   const [audio, setAudio] = useState<AudioRecorderHandle | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -30,11 +39,13 @@ export function SubmissionForm({
   const [error, setError] = useState<string | null>(null);
   const draftRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Load draft once (text only — audio drafts aren't kept)
+  // Load a saved draft — but not when editing an already-submitted entry,
+  // where the submitted text is the authoritative starting point.
   useEffect(() => {
+    if (isEditing) return;
     const saved = localStorage.getItem(DRAFT_KEY(exerciseId));
     if (saved) setContent(saved);
-  }, [exerciseId]);
+  }, [exerciseId, isEditing]);
 
   // Save draft on change
   useEffect(() => {
@@ -63,7 +74,7 @@ export function SubmissionForm({
     );
   }
 
-  if (submitted || (existing && existing.status === "pending_review")) {
+  if (submitted) {
     return (
       <div className="bg-bg-card border border-accent/30 rounded-sm p-6">
         <p className="font-serif text-xl text-ink-light leading-snug mb-2">
@@ -146,14 +157,36 @@ export function SubmissionForm({
       }
 
       setProgress(90);
-      const { error: insertErr } = await supabase.from("submissions").insert({
-        user_id: user.id,
-        exercise_id: exerciseId,
-        content: content.trim() || (audio ? `[Audio submission · ${audio.durationSec}s]` : ""),
+      const row = {
+        content:
+          content.trim() ||
+          (audio ? `[Audio submission · ${audio.durationSec}s]` : ""),
         audio_url: audioUrl,
-        status: "pending_review",
-      });
-      if (insertErr) throw insertErr;
+      };
+      if (isEditing) {
+        // Re-recording before review: replace the still-pending submission.
+        // transcript is cleared — any earlier recording's transcript is stale.
+        const { error: updateErr } = await supabase
+          .from("submissions")
+          .update({
+            ...row,
+            transcript: null,
+            status: "pending_review",
+            submitted_at: new Date().toISOString(),
+          })
+          .eq("id", existing!.id);
+        if (updateErr) throw updateErr;
+      } else {
+        const { error: insertErr } = await supabase
+          .from("submissions")
+          .insert({
+            ...row,
+            user_id: user.id,
+            exercise_id: exerciseId,
+            status: "pending_review",
+          });
+        if (insertErr) throw insertErr;
+      }
 
       setProgress(100);
       localStorage.removeItem(DRAFT_KEY(exerciseId));
@@ -171,6 +204,15 @@ export function SubmissionForm({
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
+      {isEditing && (
+        <div className="bg-accent/10 border border-accent/30 rounded-sm px-4 py-3 text-sm text-ink-light/90 leading-relaxed">
+          You&apos;re editing a submission that hasn&apos;t been reviewed yet.{" "}
+          {isAudio
+            ? "Record a new response below — it replaces the previous one."
+            : "Update your response below — it replaces the previous one."}
+        </div>
+      )}
+
       {isAudio && (
         <AudioRecorder onChange={setAudio} disabled={submitting} maxSeconds={300} />
       )}
@@ -223,7 +265,13 @@ export function SubmissionForm({
             (isAudio ? !audio : content.trim().length === 0)
           }
         >
-          {submitting ? "Submitting…" : "Submit for feedback"}
+          {submitting
+            ? isEditing
+              ? "Resubmitting…"
+              : "Submitting…"
+            : isEditing
+              ? "Resubmit"
+              : "Submit for feedback"}
         </Button>
         {!isAudio && (
           <Button
